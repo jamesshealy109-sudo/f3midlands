@@ -173,6 +173,36 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
           </form>
         </div>
       </section>
+<section id="today" class="section today-section" aria-labelledby="today-title">
+  <div class="section-heading wide">
+    <p class="eyebrow">Today</p>
+    <h2 id="today-title">Workouts happening today.</h2>
+    <p>Find a workout, get directions, and show up.</p>
+  </div>
+
+  <div class="today-grid" id="todayGrid">
+    {aos.map((ao) => (
+      <article
+        class="today-card"
+        data-days={ao.days.toLowerCase()}
+        data-address={ao.address}
+      >
+        <span>{ao.type}</span>
+        <h3>{ao.name}</h3>
+        <p>{ao.region} • {ao.time}</p>
+        <a
+          class="map-link"
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Directions
+        </a>
+      </article>
+    ))}
+  </div>
+ <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for today.</p>
+</section>
     </main>
 
     <footer>
@@ -213,6 +243,34 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
           document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
         });
       });
+const dayMap = {
+  0: ['sun', 'sunday'],
+  1: ['mon', 'monday'],
+  2: ['tue', 'tuesday'],
+  3: ['wed', 'wednesday'],
+  4: ['thu', 'thursday'],
+  5: ['fri', 'friday'],
+  6: ['sat', 'saturday']
+};
+
+const todayTokens = dayMap[new Date().getDay()];
+const todayCards = [...document.querySelectorAll('.today-card')];
+const todayEmpty = document.querySelector('#todayEmpty');
+
+let todayVisible = 0;
+
+todayCards.forEach(card => {
+  const days = card.dataset.days.toLowerCase();
+  const show = todayTokens.some(token => days.includes(token));
+
+  card.hidden = !show;
+
+  if (show) todayVisible++;
+});
+
+if (todayVisible === 0) {
+  todayEmpty.hidden = false;
+}
     </script>
   </body>
 </html>
