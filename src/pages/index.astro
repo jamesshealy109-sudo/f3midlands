@@ -156,12 +156,20 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
             <h2 id="contact-title">Need help finding your first AO?</h2>
             <p>Send a note and a local PAX can help point you to the best first workout.</p>
           </div>
-          <form id="contactForm" class="contact-form">
+          <form
+  	id="contactForm"
+  	class="contact-form"
+  	action="https://formsubmit.co/f3lexington@gmail.com"
+ 	 method="POST"
+	>
+  <input type="hidden" name="_subject" value="New F3 Midlands contact form submission" />
+  <input type="hidden" name="_captcha" value="false" />
+  <input type="hidden" name="_template" value="table" />
+  <input type="hidden" name="_next" value="https://jamesshealy109-sudo.github.io/f3midlands/#contact" />
             <label>Name<input name="name" required /></label>
             <label>Email<input type="email" name="email" required /></label>
             <label>Message<textarea name="message" rows="5" required></textarea></label>
             <button class="button primary" type="submit">Send message</button>
-            <p id="formStatus" class="form-status" role="status"></p>
           </form>
         </div>
       </section>
@@ -204,11 +212,6 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
           applyFilters();
           document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
         });
-      });
-      document.querySelector('#contactForm').addEventListener('submit', (event) => {
-        event.preventDefault();
-        document.querySelector('#formStatus').textContent = 'Message captured. Connect this form to your preferred inbox when ready.';
-        event.currentTarget.reset();
       });
     </script>
   </body>
