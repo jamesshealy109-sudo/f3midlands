@@ -1,12 +1,15 @@
-# F3 Midlands static site
+# F3 Midlands clean static repo
 
-Deploy this folder to Cloudflare Pages or GitHub Pages.
+Deploy directly to GitHub Pages from `main` branch `/root`.
 
-## Video
-Place the local MP4 at `assets/f3-midlands.mp4`. The page uses a native HTML5 video player, not Vimeo.
+## Files
+- `index.html` — full site
+- `data/aos.json` — AO data
+- `assets/f3-logo-white.png` — cleaned logo, transparent background
+- `assets/f3-logo-black.png` — cleaned logo, transparent background
+- `assets/hero-concept.png` — hero graphic
 
-## Map
-The map section points to F3NearMe with Lexington, SC and 30-mile radius. If F3NearMe blocks iframe embedding, the Open F3NearMe button still works.
-
-## Data sources
-Lexington AO list provided by James. Columbia, Lake Murray, Camden, and Saluda schedules were scraped/summarized from f3midlands.com region workout pages.
+## Notes
+- Vimeo is embedded directly in the page using video ID `143444379`.
+- F3NearMe map uses a Lexington-centered 30-mile search link.
+- Contact form does not redirect. It needs a production endpoint before launch.
