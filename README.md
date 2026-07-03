@@ -1,6 +1,8 @@
 # F3 Midlands
 
-A production Astro website for F3 Midlands, configured for GitHub Pages using GitHub Actions.
+A complete Astro site for F3 Midlands, configured for GitHub Pages at:
+
+https://jamesshealy109-sudo.github.io/f3midlands/
 
 ## Local commands
 
@@ -10,29 +12,14 @@ npm run dev
 npm run build
 ```
 
-## GitHub Pages configuration
+## Deploy
 
-Repository Settings → Pages → Build and deployment → Source: GitHub Actions.
+1. Keep the repository public or use a GitHub plan that supports private Pages.
+2. Go to Settings → Pages.
+3. Set Source to GitHub Actions.
+4. Push to `main`.
+5. The workflow in `.github/workflows/deploy.yml` builds and deploys the site.
 
-The deployment workflow is in `.github/workflows/deploy.yml`.
+## AO data
 
-## Editing AO data
-
-AO data lives in `src/data/aos.json`.
-
-Each AO includes:
-
-- `name`
-- `region`
-- `type`
-- `days`
-- `time`
-- `address`
-- `notes`
-- `sourceStatus`
-
-Region counts are calculated from this file automatically.
-
-## Public URL
-
-https://jamesshealy109-sudo.github.io/f3midlands/
+AO listings live in `src/data/aos.json`.

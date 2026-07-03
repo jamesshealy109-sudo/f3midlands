@@ -2,295 +2,213 @@
 import '../styles/global.css';
 import aos from '../data/aos.json';
 
-const base = import.meta.env.BASE_URL;
 const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
+const types = [...new Set(aos.map((ao) => ao.type))].sort();
 const regionCounts = regions.map((region) => ({
   region,
   count: aos.filter((ao) => ao.region === region).length,
-  types: [...new Set(aos.filter((ao) => ao.region === region).map((ao) => ao.type.split('/')[0].trim()))].slice(0, 4)
+  types: [...new Set(aos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
 }));
-const allTypes = [...new Set(aos.map((ao) => ao.type.split('/')[0].trim()))].sort();
 const totalAos = aos.length;
-const mapUrl = 'https://f3near.me/nearby';
+const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
 ---
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="F3 Midlands: free outdoor workouts for men across Lexington, Columbia, Lake Murray, Camden, and Saluda." />
-    <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="F3 Midlands helps men find free outdoor workouts across Lexington, Columbia, Lake Murray, Camden, and Saluda." />
     <title>F3 Midlands | Free Outdoor Workouts for Men</title>
+    <link rel="icon" href="/f3midlands/assets/f3-mark.svg" type="image/svg+xml" />
   </head>
   <body>
-    <header class="site-header" id="top">
+    <header class="site-header">
       <a class="brand" href="#top" aria-label="F3 Midlands home">
-        <img src={`${base}assets/f3-logo.png`} alt="F3" />
+        <img src="/f3midlands/assets/f3-mark.svg" alt="F3" />
         <span>F3 Midlands</span>
       </a>
-      <nav class="nav" aria-label="Primary navigation">
+      <nav aria-label="Primary navigation">
         <a href="#find">Find an AO</a>
         <a href="#new">I'm New</a>
-        <a href="#regions">Regions</a>
-        <a href="#video">Video</a>
+        <a href="#video">Watch</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="header-cta" href="#find">Find Your AO</a>
     </header>
 
-    <main>
+    <main id="top">
       <section class="hero">
         <div class="hero-bg" aria-hidden="true"></div>
-        <div class="hero-grid" aria-hidden="true"></div>
         <div class="hero-content">
-          <img class="hero-mark" src={`${base}assets/f3-logo.png`} alt="F3" />
-          <p class="eyebrow">Lexington · Columbia · Lake Murray · Camden · Saluda</p>
-          <h1>Free Outdoor Workouts for Men</h1>
-          <p class="hero-copy">No fees. No signups. No excuses. Just show up and get better with men in your community.</p>
+          <div class="hero-mark" aria-hidden="true"><img src="/f3midlands/assets/f3-mark.svg" alt="" /></div>
+          <p class="eyebrow">Lexington • Columbia • Lake Murray • Camden • Saluda</p>
+          <h1>Free outdoor workouts for men.</h1>
+          <p class="lead">No fees. No signup. No excuses. Just show up in the gloom and get better with men in your community.</p>
           <div class="hero-actions">
-            <a class="btn primary" href="#find">Find Your AO</a>
-            <a class="btn ghost" href="#new">Start Here</a>
+            <a class="button primary" href="#find">Find your AO</a>
+            <a class="button ghost" href="#new">First time?</a>
           </div>
-          <div class="stats" aria-label="F3 Midlands stats">
+          <div class="stats" aria-label="F3 Midlands quick stats">
             <div><strong>{totalAos}</strong><span>AO listings</span></div>
             <div><strong>{regions.length}</strong><span>Regions</span></div>
-            <div><strong>$0</strong><span>Always free</span></div>
+            <div><strong>$0</strong><span>Cost</span></div>
             <div><strong>365</strong><span>Rain or shine</span></div>
           </div>
         </div>
       </section>
 
-      <section class="section intro-strip" aria-label="F3 core principles">
-        <div class="principle"><span>01</span><strong>Free of charge</strong></div>
-        <div class="principle"><span>02</span><strong>Open to all men</strong></div>
-        <div class="principle"><span>03</span><strong>Outdoors, rain or shine</strong></div>
-        <div class="principle"><span>04</span><strong>Peer led</strong></div>
-        <div class="principle"><span>05</span><strong>Ends in a COT</strong></div>
-      </section>
-
-      <section class="section" id="regions">
+      <section class="section regions" aria-labelledby="regions-title">
         <div class="section-heading">
-          <p class="eyebrow">Choose your side of the Midlands</p>
-          <h2>Regions built around where you live, work, and launch your day.</h2>
+          <p class="eyebrow">Regions</p>
+          <h2 id="regions-title">Find your corner of the Midlands.</h2>
+          <p>Start with your region, then filter by workout type, day, or location.</p>
         </div>
         <div class="region-grid">
-          {regionCounts.map(({ region, count, types }) => (
-            <article class="region-card" data-region-jump={region}>
-              <div>
-                <p class="eyebrow">F3 {region}</p>
-                <h3>{region}</h3>
-                <p>{count} AO {count === 1 ? 'listing' : 'listings'}</p>
+          {regionCounts.map((item) => (
+            <a class="region-card" href={`#${item.region.toLowerCase().replaceAll(' ', '-')}`} data-region-link={item.region}>
+              <span>{item.region}</span>
+              <strong>{item.count}</strong>
+              <small>AO listings</small>
+              <p>{item.types.length ? item.types.join(' • ') : 'Workouts'}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section id="find" class="section finder" aria-labelledby="find-title">
+        <div class="section-heading wide">
+          <p class="eyebrow">AO Finder</p>
+          <h2 id="find-title">Pick a workout and show up.</h2>
+          <p>Use the filters to narrow by region or style. Directions open in Google Maps.</p>
+        </div>
+        <div class="controls" role="search">
+          <label class="search-box">
+            <span class="sr-only">Search AOs</span>
+            <input id="search" type="search" placeholder="Search AO, city, address, workout type..." />
+          </label>
+          <select id="regionFilter" aria-label="Filter by region">
+            <option value="all">All regions</option>
+            {regions.map((region) => <option value={region}>{region}</option>)}
+          </select>
+          <select id="typeFilter" aria-label="Filter by workout type">
+            <option value="all">All workout types</option>
+            {types.map((type) => <option value={type}>{type}</option>)}
+          </select>
+        </div>
+        <div class="ao-count"><span id="visibleCount">{aos.length}</span> AO listings shown</div>
+        <div class="ao-grid" id="aoGrid">
+          {aos.map((ao) => (
+            <article class="ao-card" data-region={ao.region} data-type={ao.type} data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes}`.toLowerCase()} id={ao.region.toLowerCase().replaceAll(' ', '-')}>
+              <div class="card-top">
+                <span class="type-pill">{ao.type}</span>
+                <span>{ao.region}</span>
               </div>
-              <div class="type-row">
-                {types.map((type) => <span>{type}</span>)}
-              </div>
-              <a href="#find" class="text-link">View region →</a>
+              <h3>{ao.name}</h3>
+              <dl>
+                <div><dt>When</dt><dd>{ao.days}<br />{ao.time}</dd></div>
+                <div><dt>Where</dt><dd>{ao.address}</dd></div>
+              </dl>
+              <p>{ao.notes}</p>
+              <a class="map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`} target="_blank" rel="noreferrer">Directions</a>
             </article>
           ))}
         </div>
       </section>
 
-      <section class="section map-section" id="map">
-        <div class="map-copy">
-          <p class="eyebrow">Map powered by F3NearMe</p>
-          <h2>Open the live AO map.</h2>
-          <p>Use the official finder to see nearby workout pins, confirm distance, and launch directions from your current location.</p>
-          <div class="map-actions">
-            <a class="btn primary" href={mapUrl} target="_blank" rel="noopener">Open F3NearMe Map</a>
-            <a class="btn ghost" href="#find">Browse AO List</a>
-          </div>
-        </div>
-        <div class="map-panel" aria-label="F3NearMe map preview">
-          <div class="map-toolbar">
-            <span>F3NearMe</span>
-            <strong>Nearby AO Finder</strong>
-          </div>
-          <iframe
-            src={mapUrl}
-            title="F3NearMe nearby AO map"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
-      </section>
-
-      <section class="section finder" id="find">
-        <div class="section-heading wide">
-          <p class="eyebrow">Find your first post</p>
-          <h2>Search every AO listing in the Midlands.</h2>
-          <p>Filter by region, workout style, or day. Columbia details are intentionally marked where a local schedule needs confirmation.</p>
-        </div>
-
-        <div class="finder-controls" role="search">
-          <label class="search-box">
-            <span>Search AOs</span>
-            <input id="aoSearch" type="search" placeholder="Search by AO, city, type, or notes" autocomplete="off" />
-          </label>
-          <label>
-            <span>Region</span>
-            <select id="regionFilter">
-              <option value="All">All regions</option>
-              {regions.map((region) => <option value={region}>{region}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Type</span>
-            <select id="typeFilter">
-              <option value="All">All types</option>
-              {allTypes.map((type) => <option value={type}>{type}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Day</span>
-            <select id="dayFilter">
-              <option value="All">Any day</option>
-              {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map((day) => <option value={day}>{day}</option>)}
-            </select>
-          </label>
-        </div>
-
-        <div class="result-meta">
-          <strong id="resultCount">{totalAos}</strong>
-          <span>AO listings shown</span>
-        </div>
-        <div class="ao-grid" id="aoGrid">
-          {aos.map((ao) => {
-            const searchable = `${ao.name} ${ao.region} ${ao.type} ${ao.address} ${ao.notes} ${ao.days.join(' ')}`.toLowerCase();
-            const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`;
-            return (
-              <article class="ao-card" data-search={searchable} data-region={ao.region} data-type={ao.type.split('/')[0].trim()} data-days={ao.days.join(',')}>
-                <div class="ao-topline">
-                  <span class="pill">{ao.region}</span>
-                  <span class="pill muted">{ao.type}</span>
-                </div>
-                <h3>{ao.name}</h3>
-                <p class="time">{ao.time}</p>
-                <p class="days">{ao.days.length ? ao.days.join(' · ') : 'Schedule needs confirmation'}</p>
-                <p class="address">{ao.address}</p>
-                {ao.notes && <p class="notes">{ao.notes}</p>}
-                {ao.sourceStatus.includes('incomplete') && <p class="needs-confirmation">Details need local confirmation</p>}
-                <div class="card-actions">
-                  <a href={directions} target="_blank" rel="noopener">Directions</a>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section class="section new-section" id="new">
-        <div class="new-card">
+      <section class="section map-section">
+        <div class="map-panel">
           <div>
-            <p class="eyebrow">New to F3?</p>
-            <h2>Perfect. You do not need to be in shape to start.</h2>
-            <p>Show up a few minutes early. Bring water, gloves if you have them, and a willingness to work. The men there will take care of the rest.</p>
+            <p class="eyebrow">Map</p>
+            <h2>See the full F3NearMe map.</h2>
+            <p>Open the live map to view current AOs near Lexington and across the Midlands.</p>
           </div>
-          <div class="steps">
-            <div><span>1</span><strong>Pick an AO</strong><p>Choose the closest workout that matches your morning.</p></div>
-            <div><span>2</span><strong>Show up</strong><p>No signup. No payment. No experience required.</p></div>
-            <div><span>3</span><strong>Stick around</strong><p>Every workout ends with a Circle of Trust.</p></div>
+          <a class="button primary" href="https://f3near.me/nearby" target="_blank" rel="noreferrer">Open F3NearMe</a>
+        </div>
+      </section>
+
+      <section id="new" class="section new-section" aria-labelledby="new-title">
+        <div class="new-card">
+          <p class="eyebrow">First time?</p>
+          <h2 id="new-title">You do not need to be in shape to start.</h2>
+          <p>F3 is built for men who are ready to get better. The workouts are free, outside, peer-led, and open to all men.</p>
+          <div class="new-grid">
+            <div><strong>Bring</strong><span>Water, gloves, shoes, and a good attitude.</span></div>
+            <div><strong>Arrive</strong><span>Show up 10 minutes early and introduce yourself.</span></div>
+            <div><strong>Expect</strong><span>Rain or shine. Nobody gets left behind.</span></div>
           </div>
         </div>
       </section>
 
-      <section class="section video-section" id="video">
+      <section id="video" class="section video-section" aria-labelledby="video-title">
         <div class="section-heading">
-          <p class="eyebrow">See F3 in action</p>
-          <h2>A few minutes tells the story better than a paragraph.</h2>
+          <p class="eyebrow">Watch</p>
+          <h2 id="video-title">See what F3 is about.</h2>
+          <p>One video explains the culture better than another paragraph ever could.</p>
         </div>
         <div class="video-frame">
-          <iframe
-            src="https://player.vimeo.com/video/143444379?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
-            title="F3 video"
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            allowfullscreen
-          ></iframe>
+          <iframe src="https://player.vimeo.com/video/143444379?title=0&byline=0&portrait=0" title="F3 video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
         </div>
       </section>
 
-      <section class="section contact-section" id="contact">
-        <div class="section-heading">
-          <p class="eyebrow">Reach out</p>
-          <h2>Questions before you post?</h2>
-          <p>Send a note and someone from the region can help point you to the right AO.</p>
+      <section id="contact" class="section contact-section" aria-labelledby="contact-title">
+        <div class="contact-grid">
+          <div>
+            <p class="eyebrow">Contact</p>
+            <h2 id="contact-title">Need help finding your first AO?</h2>
+            <p>Send a note and a local PAX can help point you to the best first workout.</p>
+          </div>
+          <form id="contactForm" class="contact-form">
+            <label>Name<input name="name" required /></label>
+            <label>Email<input type="email" name="email" required /></label>
+            <label>Message<textarea name="message" rows="5" required></textarea></label>
+            <button class="button primary" type="submit">Send message</button>
+            <p id="formStatus" class="form-status" role="status"></p>
+          </form>
         </div>
-        <form class="contact-form" id="contactForm">
-          <label>
-            <span>Name</span>
-            <input name="name" required placeholder="Your name" />
-          </label>
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" required placeholder="you@example.com" />
-          </label>
-          <label>
-            <span>Region</span>
-            <select name="region">
-              {regions.map((region) => <option value={region}>{region}</option>)}
-              <option value="Not sure">Not sure yet</option>
-            </select>
-          </label>
-          <label class="full">
-            <span>Message</span>
-            <textarea name="message" rows="5" required placeholder="Tell us where you are and what morning works best."></textarea>
-          </label>
-          <button class="btn primary" type="submit">Send Message</button>
-          <p class="form-status" id="formStatus" aria-live="polite"></p>
-        </form>
       </section>
     </main>
 
-    <footer class="footer">
-      <img src={`${base}assets/f3-logo.png`} alt="F3" />
-      <p>F3 Midlands</p>
-      <a href="#top">Back to top ↑</a>
+    <footer>
+      <img src="/f3midlands/assets/f3-mark.svg" alt="F3" />
+      <span>F3 Midlands</span>
+      <a href="#top">Back to top</a>
     </footer>
 
-    <script is:inline>
-      const aoSearch = document.querySelector('#aoSearch');
+    <script>
+      const search = document.querySelector('#search');
       const regionFilter = document.querySelector('#regionFilter');
       const typeFilter = document.querySelector('#typeFilter');
-      const dayFilter = document.querySelector('#dayFilter');
       const cards = [...document.querySelectorAll('.ao-card')];
-      const resultCount = document.querySelector('#resultCount');
-      const form = document.querySelector('#contactForm');
-      const formStatus = document.querySelector('#formStatus');
+      const visibleCount = document.querySelector('#visibleCount');
 
-      function updateFilters() {
-        const q = aoSearch.value.trim().toLowerCase();
+      function applyFilters() {
+        const q = search.value.trim().toLowerCase();
         const region = regionFilter.value;
         const type = typeFilter.value;
-        const day = dayFilter.value;
-        let count = 0;
+        let visible = 0;
         cards.forEach((card) => {
-          const matchesSearch = !q || card.dataset.search.includes(q);
-          const matchesRegion = region === 'All' || card.dataset.region === region;
-          const matchesType = type === 'All' || card.dataset.type === type;
-          const matchesDay = day === 'All' || card.dataset.days.includes(day);
-          const show = matchesSearch && matchesRegion && matchesType && matchesDay;
+          const matchesText = !q || card.dataset.search.includes(q);
+          const matchesRegion = region === 'all' || card.dataset.region === region;
+          const matchesType = type === 'all' || card.dataset.type === type;
+          const show = matchesText && matchesRegion && matchesType;
           card.hidden = !show;
-          if (show) count += 1;
+          if (show) visible++;
         });
-        resultCount.textContent = count;
+        visibleCount.textContent = visible;
       }
 
-      [aoSearch, regionFilter, typeFilter, dayFilter].forEach((el) => el.addEventListener('input', updateFilters));
-
-      document.querySelectorAll('[data-region-jump]').forEach((card) => {
-        card.addEventListener('click', () => {
-          regionFilter.value = card.dataset.regionJump;
-          updateFilters();
+      [search, regionFilter, typeFilter].forEach((el) => el.addEventListener('input', applyFilters));
+      document.querySelectorAll('[data-region-link]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          regionFilter.value = link.dataset.regionLink;
+          applyFilters();
           document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
         });
       });
-
-      form.addEventListener('submit', (event) => {
+      document.querySelector('#contactForm').addEventListener('submit', (event) => {
         event.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        const subject = encodeURIComponent(`F3 Midlands question from ${data.name}`);
-        const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nRegion: ${data.region}\n\n${data.message}`);
-        formStatus.innerHTML = `Thanks, ${data.name}. Your message is ready. <a href="mailto:f3lexington@gmail.com?subject=${subject}&body=${body}">Open email app</a>`;
-        form.reset();
+        document.querySelector('#formStatus').textContent = 'Message captured. Connect this form to your preferred inbox when ready.';
+        event.currentTarget.reset();
       });
     </script>
   </body>
