@@ -1,0 +1,17 @@
+[
+{"name":"Jailbreak","region":"Lexington","city":"Lexington","type":"Run","days":"M/W/F","time":"5:00–5:45 AM","address":"104 Duffie Dr, Lexington, SC","notes":"Aerobic and anaerobic running workout at Gibson Road Soccer Complex."},
+{"name":"Serpent","region":"Lexington","city":"Lexington","type":"Ruck","days":"M/W/F","time":"5:00–5:45 AM","address":"107 W Main St, Lexington, SC","notes":"Meet in the amphitheater parking lot."},
+{"name":"Urban Legend","region":"Lexington","city":"Lexington","type":"Bootcamp","days":"M/W/F","time":"5:15–6:00 AM","address":"205 E Main St, Lexington, SC","notes":"Downtown Lexington next to the 9/11 Memorial. Pre-run at 4:35 AM."},
+{"name":"Crusade","region":"Lexington","city":"Lexington","type":"Run","days":"M/W/F","time":"5:00–5:45 AM","address":"914 N Lake Dr, Lexington, SC","notes":"Morning run workout."},
+{"name":"Boneyard","region":"Lexington","city":"Lexington","type":"Bootcamp","days":"T/Th/S","time":"6:00–7:00 AM","address":"River Bluff High School, 320 Corley Mill Rd, Lexington, SC","notes":"Bootcamp with no running."},
+{"name":"The Hollow","region":"Lexington","city":"Lexington","type":"Bootcamp","days":"Saturday","time":"6:00–7:00 AM","address":"2463 Augusta Hwy, Lexington, SC","notes":"Saturday bootcamp."},
+{"name":"Python","region":"Lexington","city":"Lexington","type":"Gear","days":"Sunday","time":"5:30–6:15 AM","address":"5643 Platt Springs Rd, Lexington, SC","notes":"Kettlebell workout. Bring a bell if you have one."},
+{"name":"The Bounty","region":"Lexington","city":"Lexington","type":"Run","days":"Monday","time":"5:15–6:00 AM","address":"160 Olde Farm Rd, Lexington, SC","notes":"Speed workout at Lexington High School track."},
+{"name":"Ambush","region":"Lexington","city":"Lexington","type":"Run","days":"T/Th","time":"5:00–5:45 AM","address":"660 Rawl Road, Lexington, SC","notes":"Behind Pleasant Hill Middle School."},
+{"name":"Surge","region":"Lexington","city":"Lexington","type":"Bootcamp","days":"T/Th","time":"5:15–6:00 AM","address":"430 Calks Ferry Road, Lexington, SC","notes":"Rocky Creek Elementary. Optional pre-run."},
+{"name":"Convergence","region":"Columbia","city":"Columbia","type":"Bootcamp","days":"Varies","time":"Early AM","address":"Columbia, SC","notes":"Columbia region AO listing placeholder pending final verification."},
+{"name":"Brickpile","region":"Columbia","city":"Columbia","type":"Bootcamp","days":"M/W/F","time":"Early AM","address":"Columbia, SC","notes":"Columbia region AO listing placeholder pending final verification."},
+{"name":"Depot","region":"Lake Murray","city":"Chapin","type":"Bootcamp","days":"M/W/F","time":"Early AM","address":"Lake Murray, SC","notes":"Lake Murray region AO listing placeholder pending final verification."},
+{"name":"Dawnstrike","region":"Camden","city":"Camden","type":"Bootcamp","days":"Varies","time":"Early AM","address":"Camden, SC","notes":"Camden region AO listing placeholder pending final verification."},
+{"name":"Saluda","region":"Saluda","city":"Saluda","type":"Bootcamp","days":"Varies","time":"Early AM","address":"Saluda, SC","notes":"Saluda region AO listing placeholder pending final verification."}
+]

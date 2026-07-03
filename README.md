@@ -1,13 +1,10 @@
-# F3 Midlands website
+# F3 Midlands
 
-Static website for F3 Midlands.
+Production static site built with Astro and deployed on GitHub Pages.
 
-## Files
-
-- `index.html` — main site
-- `data/aos.json` — AO data
-- `assets/` — logo and images
+## Local setup
+npm install
+npm run dev
 
 ## Deploy
-
-Use GitHub Pages from the `main` branch and `/root` folder.
+Push to main. GitHub Pages builds from the generated static site configuration.
