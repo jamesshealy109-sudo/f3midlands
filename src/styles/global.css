@@ -58,8 +58,9 @@ button, input, select, textarea { font: inherit; }
 footer img {
   width: 42px;
   height: 42px;
-  opacity: .98;
-  filter: brightness(0) invert(1) drop-shadow(0 8px 24px rgba(0,0,0,.45));
+  object-fit: contain;
+  opacity: 1;
+  filter: none;
 }
 
 nav {
@@ -111,8 +112,9 @@ nav a:hover { opacity: 1; color: var(--gold-2); }
 .hero-mark img {
   width: clamp(110px, 18vw, 205px);
   margin-bottom: 10px;
-  opacity: .2;
-  filter: brightness(0) invert(1) drop-shadow(0 18px 50px rgba(0,0,0,.42));
+  opacity: .32;
+  object-fit: contain;
+  filter: none;
 }
 
 .eyebrow {
