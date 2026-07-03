@@ -1,3 +1,9 @@
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
-export default defineConfig({ site: 'https://jamesshealy109-sudo.github.io', base: '/f3midlands', integrations: [react()], output: 'static' });
+import sitemap from '@astrojs/sitemap';
+
+export default defineConfig({
+  site: 'https://jamesshealy109-sudo.github.io',
+  base: '/f3midlands',
+  integrations: [sitemap()],
+  output: 'static'
+});

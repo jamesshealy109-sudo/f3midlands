@@ -1,0 +1,17 @@
+---
+const { title = 'F3 Midlands' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content="Free outdoor workouts for men across Lexington, Columbia, Lake Murray, Camden, and Saluda." />
+    <link rel="icon" href={`${base}assets/f3-logo.png`} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

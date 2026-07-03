@@ -1,10 +1,16 @@
 # F3 Midlands
 
-Production static site built with Astro and deployed on GitHub Pages.
+Modern static website for F3 Midlands.
 
-## Local setup
+## Local development
+
+```bash
 npm install
 npm run dev
+```
 
 ## Deploy
-Push to main. GitHub Pages builds from the generated static site configuration.
+
+GitHub Pages deploys automatically from `.github/workflows/deploy.yml`.
+
+In GitHub repo settings, set Pages source to **GitHub Actions**.
