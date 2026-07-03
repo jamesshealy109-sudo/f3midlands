@@ -1,181 +1,297 @@
 ---
-import Base from '../layouts/Base.astro';
+import '../styles/global.css';
 import aos from '../data/aos.json';
-const regions = [
-  { name: 'Lexington', count: 32, line: 'The largest cluster in the Midlands, with bootcamps, runs, rucks, gear, sports, and mobility.', image: 'linear-gradient(135deg, rgba(16,16,16,.35), rgba(111,92,42,.25)), radial-gradient(circle at 30% 20%, rgba(255,255,255,.24), transparent 30%), linear-gradient(145deg,#181512,#403820)' },
-  { name: 'Columbia', count: 29, line: 'Downtown, Forest Acres, Northeast, and surrounding Columbia AOs.', image: 'linear-gradient(135deg, rgba(16,16,16,.35), rgba(59,74,55,.35)), radial-gradient(circle at 70% 30%, rgba(255,255,255,.22), transparent 30%), linear-gradient(145deg,#111812,#253825)' },
-  { name: 'Lake Murray', count: 11, line: 'Lake-area AOs serving Chapin, Irmo, Ballentine, and the Murray side of the region.', image: 'linear-gradient(135deg, rgba(16,16,16,.35), rgba(36,70,84,.35)), radial-gradient(circle at 50% 25%, rgba(255,255,255,.24), transparent 30%), linear-gradient(145deg,#10171b,#24404b)' },
-  { name: 'Camden', count: 1, line: 'Camden-area F3 workout options.', image: 'linear-gradient(135deg, rgba(16,16,16,.35), rgba(84,54,36,.35)), linear-gradient(145deg,#1b1510,#3b2c1e)' },
-  { name: 'Saluda', count: 2, line: 'Saluda-area F3 workout options.', image: 'linear-gradient(135deg, rgba(16,16,16,.35), rgba(80,70,45,.35)), linear-gradient(145deg,#18150d,#3b351f)' }
-];
-const workoutTypes = [...new Set(aos.map(a => a.type))].sort();
+
+const base = import.meta.env.BASE_URL;
+const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
+const regionCounts = regions.map((region) => ({
+  region,
+  count: aos.filter((ao) => ao.region === region).length,
+  types: [...new Set(aos.filter((ao) => ao.region === region).map((ao) => ao.type.split('/')[0].trim()))].slice(0, 4)
+}));
+const allTypes = [...new Set(aos.map((ao) => ao.type.split('/')[0].trim()))].sort();
+const totalAos = aos.length;
+const mapUrl = 'https://f3near.me/nearby';
 ---
-<Base>
-<header class="nav">
-  <a class="brand" href="#top"><img src="./assets/f3-logo.png" alt="F3 logo"/><span>F3 Midlands</span></a>
-  <nav>
-    <a href="#find">Find an AO</a>
-    <a href="#new">I'm New</a>
-    <a href="#video">Video</a>
-    <a href="#contact">Contact</a>
-  </nav>
-</header>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="F3 Midlands: free outdoor workouts for men across Lexington, Columbia, Lake Murray, Camden, and Saluda." />
+    <link rel="icon" type="image/png" href={`${base}favicon.png`} />
+    <title>F3 Midlands | Free Outdoor Workouts for Men</title>
+  </head>
+  <body>
+    <header class="site-header" id="top">
+      <a class="brand" href="#top" aria-label="F3 Midlands home">
+        <img src={`${base}assets/f3-logo.png`} alt="F3" />
+        <span>F3 Midlands</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#find">Find an AO</a>
+        <a href="#new">I'm New</a>
+        <a href="#regions">Regions</a>
+        <a href="#video">Video</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="header-cta" href="#find">Find Your AO</a>
+    </header>
 
-<main id="top">
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <img class="hero-mark" src="./assets/f3-logo.png" alt="F3" />
-      <p class="eyebrow">Lexington • Columbia • Lake Murray • Camden • Saluda</p>
-      <h1>Free outdoor workouts for men.</h1>
-      <p class="lead">No fees. No signups. No excuses. Just show up.</p>
-      <div class="hero-actions">
-        <a class="button primary" href="#find">Find Your AO</a>
-        <a class="button ghost" href="#new">I'm New</a>
-      </div>
-      <div class="stats">
-        <div><strong>75</strong><span>AO listings</span></div>
-        <div><strong>5</strong><span>Regions</span></div>
-        <div><strong>$0</strong><span>Always free</span></div>
-        <div><strong>Rain</strong><span>or shine</span></div>
-      </div>
-    </div>
-  </section>
+    <main>
+      <section class="hero">
+        <div class="hero-bg" aria-hidden="true"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-content">
+          <img class="hero-mark" src={`${base}assets/f3-logo.png`} alt="F3" />
+          <p class="eyebrow">Lexington · Columbia · Lake Murray · Camden · Saluda</p>
+          <h1>Free Outdoor Workouts for Men</h1>
+          <p class="hero-copy">No fees. No signups. No excuses. Just show up and get better with men in your community.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#find">Find Your AO</a>
+            <a class="btn ghost" href="#new">Start Here</a>
+          </div>
+          <div class="stats" aria-label="F3 Midlands stats">
+            <div><strong>{totalAos}</strong><span>AO listings</span></div>
+            <div><strong>{regions.length}</strong><span>Regions</span></div>
+            <div><strong>$0</strong><span>Always free</span></div>
+            <div><strong>365</strong><span>Rain or shine</span></div>
+          </div>
+        </div>
+      </section>
 
-  <section class="section intro" id="new">
-    <div>
-      <p class="eyebrow">First time?</p>
-      <h2>You belong here before you feel ready.</h2>
-    </div>
-    <div class="intro-grid">
-      <article><span>01</span><h3>Show up early</h3><p>Arrive 10 minutes before start time. Find the group and tell someone you're new.</p></article>
-      <article><span>02</span><h3>Bring the basics</h3><p>Shoes, water, gloves if you have them, and a willingness to work.</p></article>
-      <article><span>03</span><h3>Modify anything</h3><p>You don't need to be in shape. Nobody gets left behind.</p></article>
-    </div>
-  </section>
+      <section class="section intro-strip" aria-label="F3 core principles">
+        <div class="principle"><span>01</span><strong>Free of charge</strong></div>
+        <div class="principle"><span>02</span><strong>Open to all men</strong></div>
+        <div class="principle"><span>03</span><strong>Outdoors, rain or shine</strong></div>
+        <div class="principle"><span>04</span><strong>Peer led</strong></div>
+        <div class="principle"><span>05</span><strong>Ends in a COT</strong></div>
+      </section>
 
-  <section class="regions section">
-    <div class="section-head">
-      <p class="eyebrow">Regions</p>
-      <h2>Find the part of the Midlands closest to you.</h2>
-    </div>
-    <div class="region-grid">
-      {regions.map(region => (
-        <a class="region-card" href={`#find`} data-region-jump={region.name} style={`--bg:${region.image}`}>
-          <div><h3>{region.name}</h3><p>{region.line}</p></div>
-          <strong>{region.count} <span>AO listings</span></strong>
-        </a>
-      ))}
-    </div>
-  </section>
+      <section class="section" id="regions">
+        <div class="section-heading">
+          <p class="eyebrow">Choose your side of the Midlands</p>
+          <h2>Regions built around where you live, work, and launch your day.</h2>
+        </div>
+        <div class="region-grid">
+          {regionCounts.map(({ region, count, types }) => (
+            <article class="region-card" data-region-jump={region}>
+              <div>
+                <p class="eyebrow">F3 {region}</p>
+                <h3>{region}</h3>
+                <p>{count} AO {count === 1 ? 'listing' : 'listings'}</p>
+              </div>
+              <div class="type-row">
+                {types.map((type) => <span>{type}</span>)}
+              </div>
+              <a href="#find" class="text-link">View region →</a>
+            </article>
+          ))}
+        </div>
+      </section>
 
-  <section class="section video" id="video">
-    <div class="section-head centered">
-      <p class="eyebrow">See F3 in action</p>
-      <h2>It starts before sunrise.</h2>
-      <p>Watch what F3 looks like, then find the AO closest to you.</p>
-    </div>
-    <div class="video-frame">
-      <iframe src="https://player.vimeo.com/video/143444379?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="F3 video"></iframe>
-    </div>
-  </section>
+      <section class="section map-section" id="map">
+        <div class="map-copy">
+          <p class="eyebrow">Map powered by F3NearMe</p>
+          <h2>Open the live AO map.</h2>
+          <p>Use the official finder to see nearby workout pins, confirm distance, and launch directions from your current location.</p>
+          <div class="map-actions">
+            <a class="btn primary" href={mapUrl} target="_blank" rel="noopener">Open F3NearMe Map</a>
+            <a class="btn ghost" href="#find">Browse AO List</a>
+          </div>
+        </div>
+        <div class="map-panel" aria-label="F3NearMe map preview">
+          <div class="map-toolbar">
+            <span>F3NearMe</span>
+            <strong>Nearby AO Finder</strong>
+          </div>
+          <iframe
+            src={mapUrl}
+            title="F3NearMe nearby AO map"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+      </section>
 
-  <section class="section map-section">
-    <div class="map-copy">
-      <p class="eyebrow">Map</p>
-      <h2>Use the live F3NearMe map.</h2>
-      <p>The official map is the source of truth for pins, directions, and nearby workouts.</p>
-      <a class="button primary" target="_blank" rel="noopener" href="https://f3near.me/nearby?lat=33.9815&lon=-81.2362&radius=30">Open F3NearMe Map</a>
-    </div>
-    <a class="map-card" target="_blank" rel="noopener" href="https://f3near.me/nearby?lat=33.9815&lon=-81.2362&radius=30">
-      <div class="fake-map">
-        <span style="--x:20%;--y:60%"></span><span style="--x:32%;--y:48%"></span><span style="--x:45%;--y:55%"></span><span style="--x:58%;--y:42%"></span><span style="--x:70%;--y:50%"></span><span style="--x:78%;--y:32%"></span>
-      </div>
-      <strong>F3NearMe</strong><em>Tap to browse live AO map</em>
-    </a>
-  </section>
+      <section class="section finder" id="find">
+        <div class="section-heading wide">
+          <p class="eyebrow">Find your first post</p>
+          <h2>Search every AO listing in the Midlands.</h2>
+          <p>Filter by region, workout style, or day. Columbia details are intentionally marked where a local schedule needs confirmation.</p>
+        </div>
 
-  <section class="section finder" id="find">
-    <div class="section-head centered">
-      <p class="eyebrow">AO Finder</p>
-      <h2>Choose a region, workout type, or search by name.</h2>
-    </div>
-    <div class="filters">
-      <input id="search" placeholder="Search AO, address, type..." />
-      <select id="regionFilter"><option value="all">All regions</option>{regions.map(r => <option value={r.name}>{r.name}</option>)}</select>
-      <select id="typeFilter"><option value="all">All types</option>{workoutTypes.map(t => <option value={t}>{t}</option>)}</select>
-    </div>
-    <div class="ao-grid" id="aoGrid">
-      {aos.map(ao => (
-        <article class="ao-card" data-name={ao.name.toLowerCase()} data-region={ao.region} data-type={ao.type} data-text={`${ao.name} ${ao.region} ${ao.type} ${ao.address} ${ao.notes}`.toLowerCase()}>
-          <div class="ao-top"><span>{ao.type}</span><strong>{ao.region}</strong></div>
-          <h3>{ao.name}</h3>
-          <p class="meta">{ao.days} • {ao.time}</p>
-          <p class="addr">{ao.address}</p>
-          <p>{ao.notes}</p>
-          <a target="_blank" rel="noopener" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}>Directions →</a>
-        </article>
-      ))}
-    </div>
-  </section>
+        <div class="finder-controls" role="search">
+          <label class="search-box">
+            <span>Search AOs</span>
+            <input id="aoSearch" type="search" placeholder="Search by AO, city, type, or notes" autocomplete="off" />
+          </label>
+          <label>
+            <span>Region</span>
+            <select id="regionFilter">
+              <option value="All">All regions</option>
+              {regions.map((region) => <option value={region}>{region}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Type</span>
+            <select id="typeFilter">
+              <option value="All">All types</option>
+              {allTypes.map((type) => <option value={type}>{type}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Day</span>
+            <select id="dayFilter">
+              <option value="All">Any day</option>
+              {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map((day) => <option value={day}>{day}</option>)}
+            </select>
+          </label>
+        </div>
 
-  <section class="section contact" id="contact">
-    <div>
-      <p class="eyebrow">Contact</p>
-      <h2>Questions before your first post?</h2>
-      <p>Send a note and someone from the region can point you to the best first AO.</p>
-    </div>
-    <form id="contactForm">
-      <input required placeholder="Name" />
-      <input required type="email" placeholder="Email" />
-      <textarea required placeholder="What part of town are you in?"></textarea>
-      <button class="button primary" type="submit">Send Message</button>
-      <p class="form-note" id="formNote"></p>
-    </form>
-  </section>
-</main>
+        <div class="result-meta">
+          <strong id="resultCount">{totalAos}</strong>
+          <span>AO listings shown</span>
+        </div>
+        <div class="ao-grid" id="aoGrid">
+          {aos.map((ao) => {
+            const searchable = `${ao.name} ${ao.region} ${ao.type} ${ao.address} ${ao.notes} ${ao.days.join(' ')}`.toLowerCase();
+            const directions = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`;
+            return (
+              <article class="ao-card" data-search={searchable} data-region={ao.region} data-type={ao.type.split('/')[0].trim()} data-days={ao.days.join(',')}>
+                <div class="ao-topline">
+                  <span class="pill">{ao.region}</span>
+                  <span class="pill muted">{ao.type}</span>
+                </div>
+                <h3>{ao.name}</h3>
+                <p class="time">{ao.time}</p>
+                <p class="days">{ao.days.length ? ao.days.join(' · ') : 'Schedule needs confirmation'}</p>
+                <p class="address">{ao.address}</p>
+                {ao.notes && <p class="notes">{ao.notes}</p>}
+                {ao.sourceStatus.includes('incomplete') && <p class="needs-confirmation">Details need local confirmation</p>}
+                <div class="card-actions">
+                  <a href={directions} target="_blank" rel="noopener">Directions</a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
-<footer>F3 Midlands • Fitness • Fellowship • Faith</footer>
+      <section class="section new-section" id="new">
+        <div class="new-card">
+          <div>
+            <p class="eyebrow">New to F3?</p>
+            <h2>Perfect. You do not need to be in shape to start.</h2>
+            <p>Show up a few minutes early. Bring water, gloves if you have them, and a willingness to work. The men there will take care of the rest.</p>
+          </div>
+          <div class="steps">
+            <div><span>1</span><strong>Pick an AO</strong><p>Choose the closest workout that matches your morning.</p></div>
+            <div><span>2</span><strong>Show up</strong><p>No signup. No payment. No experience required.</p></div>
+            <div><span>3</span><strong>Stick around</strong><p>Every workout ends with a Circle of Trust.</p></div>
+          </div>
+        </div>
+      </section>
 
-<script>
-  const search = document.getElementById('search');
-  const regionFilter = document.getElementById('regionFilter');
-  const typeFilter = document.getElementById('typeFilter');
-  const cards = [...document.querySelectorAll('.ao-card')];
-  function filterCards(){
-    const q = search.value.toLowerCase();
-    const r = regionFilter.value;
-    const t = typeFilter.value;
-    cards.forEach(card => {
-      const okQ = card.dataset.text.includes(q);
-      const okR = r === 'all' || card.dataset.region === r;
-      const okT = t === 'all' || card.dataset.type === t;
-      card.style.display = okQ && okR && okT ? '' : 'none';
-    });
-  }
-  [search, regionFilter, typeFilter].forEach(el => el.addEventListener('input', filterCards));
-  document.querySelectorAll('[data-region-jump]').forEach(el => el.addEventListener('click', () => {
-    regionFilter.value = el.dataset.regionJump; setTimeout(filterCards, 50);
-  }));
-  document.getElementById('contactForm').addEventListener('submit', e => {
-    e.preventDefault(); document.getElementById('formNote').textContent = 'Thanks — your message is ready for the regional contact workflow.'; e.target.reset();
-  });
-</script>
+      <section class="section video-section" id="video">
+        <div class="section-heading">
+          <p class="eyebrow">See F3 in action</p>
+          <h2>A few minutes tells the story better than a paragraph.</h2>
+        </div>
+        <div class="video-frame">
+          <iframe
+            src="https://player.vimeo.com/video/143444379?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
+            title="F3 video"
+            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </section>
 
-<style>
-  :root{--bg:#070706;--panel:#10100e;--muted:#b8b0a1;--text:#f6efe2;--gold:#c9a64d;--gold2:#806a2a;--line:rgba(255,255,255,.12)}
-  *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif} a{color:inherit;text-decoration:none}
-  .nav{position:fixed;z-index:50;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:18px clamp(18px,4vw,56px);background:linear-gradient(to bottom,rgba(0,0,0,.72),transparent);backdrop-filter:blur(10px)}
-  .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.04em}.brand img{width:42px;height:42px;filter:invert(1) contrast(1.3);mix-blend-mode:screen}.nav nav{display:flex;gap:22px;color:#ddd;font-weight:700;font-size:.92rem}.nav nav a:hover{color:var(--gold)}
-  .hero{min-height:100vh;position:relative;display:grid;place-items:center;overflow:hidden;text-align:center;padding:120px 22px 60px}.hero-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 20%,rgba(230,207,143,.22),transparent 32%),linear-gradient(180deg,rgba(0,0,0,.2),#070706 95%),linear-gradient(135deg,#0b0b09,#272219 48%,#080807);}.hero-bg:before{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 1px,transparent 1px 90px);transform:rotate(-4deg)}.hero-overlay{position:absolute;inset:0;background:radial-gradient(circle at center,transparent,rgba(0,0,0,.86) 74%)}
-  .hero-content{position:relative;z-index:2;max-width:1050px}.hero-mark{width:min(230px,42vw);filter:invert(1) contrast(1.6) drop-shadow(0 25px 60px #000);mix-blend-mode:screen;opacity:.92}.eyebrow{color:var(--gold);text-transform:uppercase;letter-spacing:.22em;font-weight:900;font-size:.78rem}.hero h1{font-size:clamp(3rem,8vw,8rem);line-height:.9;margin:18px 0;text-transform:uppercase;letter-spacing:-.07em}.lead{font-size:clamp(1.2rem,2vw,1.65rem);color:var(--muted);font-weight:700}.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:32px 0}.button{display:inline-flex;justify-content:center;align-items:center;min-height:50px;padding:0 24px;border-radius:999px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line)}.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#111}.ghost{background:rgba(255,255,255,.06)}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:40px}.stats div{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:18px;padding:18px}.stats strong{display:block;font-size:2rem}.stats span{color:var(--muted);font-weight:800;text-transform:uppercase;font-size:.75rem;letter-spacing:.12em}
-  .section{padding:90px clamp(18px,5vw,70px);max-width:1450px;margin:0 auto}.section-head{max-width:780px;margin-bottom:34px}.section-head.centered{text-align:center;margin-inline:auto}.section h2{font-size:clamp(2rem,4.8vw,4.8rem);line-height:1;margin:8px 0 14px;letter-spacing:-.06em}.section p{color:var(--muted);line-height:1.7}.intro{display:grid;grid-template-columns:.75fr 1.25fr;gap:42px}.intro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.intro article,.ao-card,form{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:0 30px 70px rgba(0,0,0,.25)}.intro span{color:var(--gold);font-weight:900}.intro h3,.ao-card h3{font-size:1.5rem;margin:.5rem 0}
-  .region-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.region-card{min-height:260px;border-radius:30px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;background:var(--bg);border:1px solid var(--line);overflow:hidden;position:relative}.region-card:before{content:"";position:absolute;inset:0;background:var(--bg);z-index:-1}.region-card h3{font-size:2rem;margin:0}.region-card p{font-size:.95rem}.region-card strong{font-size:2rem}.region-card span{display:block;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
-  .video-frame{width:min(1050px,94vw);aspect-ratio:16/9;margin:34px auto 0;border-radius:32px;overflow:hidden;border:1px solid var(--line);box-shadow:0 35px 120px rgba(0,0,0,.55);background:#000}.video-frame iframe{width:100%;height:100%;border:0}
-  .map-section,.contact{display:grid;grid-template-columns:.9fr 1.1fr;gap:32px;align-items:center}.map-card{display:block;border-radius:34px;border:1px solid var(--line);background:#141611;padding:18px;box-shadow:0 30px 90px rgba(0,0,0,.35)}.fake-map{height:360px;border-radius:24px;background:linear-gradient(135deg,#314136,#899d87);position:relative;overflow:hidden}.fake-map:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(25deg,rgba(255,255,255,.12) 0 2px,transparent 2px 34px),radial-gradient(circle at 70% 30%,rgba(125,170,210,.5),transparent 28%)}.fake-map span{position:absolute;left:var(--x);top:var(--y);width:18px;height:18px;border-radius:50% 50% 50% 0;background:var(--gold);transform:rotate(-45deg);box-shadow:0 0 0 7px rgba(201,166,77,.22)}.map-card strong{display:block;font-size:2rem;margin-top:16px}.map-card em{color:var(--muted);font-style:normal}
-  .filters{display:grid;grid-template-columns:1fr 220px 220px;gap:12px;margin:30px auto;max-width:1050px}.filters input,.filters select,form input,form textarea{width:100%;background:#0c0c0b;color:var(--text);border:1px solid var(--line);border-radius:16px;padding:16px;font:inherit}form textarea{min-height:140px;resize:vertical}.ao-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.ao-top{display:flex;justify-content:space-between;gap:12px}.ao-top span{color:#111;background:var(--gold);font-weight:900;border-radius:999px;padding:6px 10px;font-size:.75rem;text-transform:uppercase}.ao-top strong{color:var(--muted)}.meta{font-weight:900;color:#fff!important}.addr{color:var(--gold)!important}.ao-card a{color:var(--gold);font-weight:900}form{display:grid;gap:14px}.form-note{margin:0;color:var(--gold)!important;font-weight:800}footer{text-align:center;padding:42px;color:var(--muted);border-top:1px solid var(--line)}
-  @media(max-width:950px){.nav nav{display:none}.stats,.region-grid,.intro-grid,.ao-grid{grid-template-columns:1fr 1fr}.intro,.map-section,.contact{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.hero h1{font-size:clamp(2.8rem,14vw,5rem)}}@media(max-width:620px){.stats,.region-grid,.intro-grid,.ao-grid{grid-template-columns:1fr}.hero{padding-top:96px}.section{padding-block:64px}.button{width:100%}}
-</style>
-</Base>
+      <section class="section contact-section" id="contact">
+        <div class="section-heading">
+          <p class="eyebrow">Reach out</p>
+          <h2>Questions before you post?</h2>
+          <p>Send a note and someone from the region can help point you to the right AO.</p>
+        </div>
+        <form class="contact-form" id="contactForm">
+          <label>
+            <span>Name</span>
+            <input name="name" required placeholder="Your name" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" required placeholder="you@example.com" />
+          </label>
+          <label>
+            <span>Region</span>
+            <select name="region">
+              {regions.map((region) => <option value={region}>{region}</option>)}
+              <option value="Not sure">Not sure yet</option>
+            </select>
+          </label>
+          <label class="full">
+            <span>Message</span>
+            <textarea name="message" rows="5" required placeholder="Tell us where you are and what morning works best."></textarea>
+          </label>
+          <button class="btn primary" type="submit">Send Message</button>
+          <p class="form-status" id="formStatus" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <img src={`${base}assets/f3-logo.png`} alt="F3" />
+      <p>F3 Midlands</p>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+
+    <script is:inline>
+      const aoSearch = document.querySelector('#aoSearch');
+      const regionFilter = document.querySelector('#regionFilter');
+      const typeFilter = document.querySelector('#typeFilter');
+      const dayFilter = document.querySelector('#dayFilter');
+      const cards = [...document.querySelectorAll('.ao-card')];
+      const resultCount = document.querySelector('#resultCount');
+      const form = document.querySelector('#contactForm');
+      const formStatus = document.querySelector('#formStatus');
+
+      function updateFilters() {
+        const q = aoSearch.value.trim().toLowerCase();
+        const region = regionFilter.value;
+        const type = typeFilter.value;
+        const day = dayFilter.value;
+        let count = 0;
+        cards.forEach((card) => {
+          const matchesSearch = !q || card.dataset.search.includes(q);
+          const matchesRegion = region === 'All' || card.dataset.region === region;
+          const matchesType = type === 'All' || card.dataset.type === type;
+          const matchesDay = day === 'All' || card.dataset.days.includes(day);
+          const show = matchesSearch && matchesRegion && matchesType && matchesDay;
+          card.hidden = !show;
+          if (show) count += 1;
+        });
+        resultCount.textContent = count;
+      }
+
+      [aoSearch, regionFilter, typeFilter, dayFilter].forEach((el) => el.addEventListener('input', updateFilters));
+
+      document.querySelectorAll('[data-region-jump]').forEach((card) => {
+        card.addEventListener('click', () => {
+          regionFilter.value = card.dataset.regionJump;
+          updateFilters();
+          document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(form).entries());
+        const subject = encodeURIComponent(`F3 Midlands question from ${data.name}`);
+        const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nRegion: ${data.region}\n\n${data.message}`);
+        formStatus.innerHTML = `Thanks, ${data.name}. Your message is ready. <a href="mailto:f3lexington@gmail.com?subject=${subject}&body=${body}">Open email app</a>`;
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
