@@ -1,17 +1,16 @@
 ---
 import '../styles/global.css';
 import aos from '../data/aos.json';
-const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false);
+const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false && ao.active !== false && ao.verified !== false);
 
 const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
 const types = [...new Set(visibleAos.map((ao) => ao.type))].sort();
 const regionCounts = regions.map((region) => ({
   region,
-count: visibleAos.filter((ao) => ao.region === region).length,
-types: [...new Set(visibleAos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
+  count: visibleAos.filter((ao) => ao.region === region).length,
+  types: [...new Set(visibleAos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
 }));
 const totalAos = visibleAos.length;
-const lexingtonCount = visibleAos.filter((ao) => ao.region === 'Lexington').length;
 ---
 <!doctype html>
 <html lang="en">
@@ -114,7 +113,7 @@ const lexingtonCount = visibleAos.filter((ao) => ao.region === 'Lexington').leng
                 <div><dt>Where</dt><dd>{ao.address}</dd></div>
               </dl>
               <p>{ao.notes}</p>
-              <a class="map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`} target="_blank" rel="noreferrer">Directions</a>
+              <a class="map-link" href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`} target="_blank" rel="noreferrer">Directions</a>
             </article>
           ))}
         </div>
@@ -190,7 +189,7 @@ const lexingtonCount = visibleAos.filter((ao) => ao.region === 'Lexington').leng
     {visibleAos.map((ao) => (
       <article
         class="today-card"
-        data-days={ao.days.toLowerCase()}
+        data-days={(ao.days || '').toLowerCase()}
         data-address={ao.address}
       >
         <span>{ao.type}</span>
@@ -198,7 +197,7 @@ const lexingtonCount = visibleAos.filter((ao) => ao.region === 'Lexington').leng
         <p>{ao.region} • {ao.time}</p>
         <a
           class="map-link"
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+          href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
           target="_blank"
           rel="noreferrer"
         >
