@@ -109,12 +109,22 @@ nav a:hover { opacity: 1; color: var(--gold-2); }
   text-align: center;
 }
 
+.hero-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
 .hero-mark img {
   width: clamp(110px, 18vw, 205px);
+  height: auto;
   margin-bottom: 10px;
   opacity: .32;
   object-fit: contain;
   filter: none;
+  background: transparent;
+  mix-blend-mode: screen;
 }
 
 .eyebrow {
