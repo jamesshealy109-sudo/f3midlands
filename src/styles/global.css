@@ -596,3 +596,55 @@ footer span {
     grid-template-columns: 1fr;
   }
 }
+
+.start-layout {
+
+    display:grid;
+
+    grid-template-columns: 1.15fr .85fr;
+
+    gap:48px;
+
+    align-items:center;
+
+}
+
+.start-copy {
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.start-video iframe {
+
+    width:100%;
+
+    aspect-ratio:16/9;
+
+    border:none;
+
+    border-radius:18px;
+
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+
+}
+
+.start-copy .button{
+
+    margin-top:28px;
+
+    width:max-content;
+
+}
+
+@media (max-width:900px){
+
+.start-layout{
+
+grid-template-columns:1fr;
+
+}
+
+}
