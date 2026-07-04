@@ -726,3 +726,44 @@ footer span {
     width: 100%;
   }
 }
+
+
+/* === Footer Social Links === */
+
+footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+
+.footer-brand{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+}
+
+.footer-links{
+  display:flex;
+  align-items:center;
+  gap:1.25rem;
+}
+
+.social-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#bdbdbd;
+  transition:all .25s ease;
+}
+
+.social-link svg{
+  width:28px;
+  height:28px;
+}
+
+.social-link:hover{
+  color:#8DC63F;
+  transform:translateY(-2px) scale(1.1);
+}
