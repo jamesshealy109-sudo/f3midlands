@@ -648,3 +648,19 @@ grid-template-columns:1fr;
 }
 
 }
+.map-embed {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  border-radius: 30px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: #000;
+}
+
+.map-embed iframe {
+  width: 100%;
+  height: min(70vh, 620px);
+  border: 0;
+  display: block;
+}
