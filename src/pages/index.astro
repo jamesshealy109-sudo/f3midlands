@@ -1,16 +1,17 @@
 ---
 import '../styles/global.css';
 import aos from '../data/aos.json';
+const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false);
 
 const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
-const types = [...new Set(aos.map((ao) => ao.type))].sort();
+const types = [...new Set(visibleAos.map((ao) => ao.type))].sort();
 const regionCounts = regions.map((region) => ({
   region,
-  count: aos.filter((ao) => ao.region === region).length,
-  types: [...new Set(aos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
+count: visibleAos.filter((ao) => ao.region === region).length,
+types: [...new Set(visibleAos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
 }));
-const totalAos = aos.length;
-const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
+const totalAos = visibleAos.length;
+const lexingtonCount = visibleAos.filter((ao) => ao.region === 'Lexington').length;
 ---
 <!doctype html>
 <html lang="en">
@@ -99,9 +100,9 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
             {types.map((type) => <option value={type}>{type}</option>)}
           </select>
         </div>
-        <div class="ao-count"><span id="visibleCount">{aos.length}</span> AO listings shown</div>
+        <div class="ao-count"><span id="visibleCount">{visibleAos.length}</span> AO listings shown</div>
         <div class="ao-grid" id="aoGrid">
-          {aos.map((ao) => (
+         {visibleAos.map((ao) => (
             <article class="ao-card" data-region={ao.region} data-type={ao.type} data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes}`.toLowerCase()} id={ao.region.toLowerCase().replaceAll(' ', '-')}>
               <div class="card-top">
                 <span class="type-pill">{ao.type}</span>
@@ -186,7 +187,7 @@ const lexingtonCount = aos.filter((ao) => ao.region === 'Lexington').length;
   </div>
 
   <div class="today-grid" id="todayGrid">
-    {aos.map((ao) => (
+    {visibleAos.map((ao) => (
       <article
         class="today-card"
         data-days={ao.days.toLowerCase()}
