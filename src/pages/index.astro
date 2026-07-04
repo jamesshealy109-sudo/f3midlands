@@ -5,11 +5,6 @@ const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false && ao.active !=
 
 const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
 const types = [...new Set(visibleAos.map((ao) => ao.type))].sort();
-const regionCounts = regions.map((region) => ({
-  region,
-  count: visibleAos.filter((ao) => ao.region === region).length,
-  types: [...new Set(visibleAos.filter((ao) => ao.region === region).map((ao) => ao.type))].slice(0, 4)
-}));
 const totalAos = visibleAos.length;
 ---
 <!doctype html>
@@ -36,7 +31,7 @@ const totalAos = visibleAos.length;
         <a href="#new">I'm New</a>
 <a href="#today">Today</a>
 <a href="#find">Find an AO</a>
-<a href="#contact">Contact</a>
+<a href="#contact">Need Help?</a>
       </nav>
     </header>
 
@@ -66,13 +61,13 @@ const totalAos = visibleAos.length;
 
     <div class="start-copy">
 
-      <p class="eyebrow">FIRST TIME?</p>
+      <p class="eyebrow">Start Here</p>
 
-      <h2>You do not need to be in shape to start.</h2>
+      <h2>Your first F3 workout starts here.</h2>
 
       <p>
-        F3 is built for men ready to get better. The workouts are free,
-        outdoors, peer-led, and open to all men.
+        F3 is free, outdoors, peer-led, and open to all men. Show up
+        10 minutes early and we'll take care of the rest.
       </p>
 
       <div class="new-grid">
@@ -115,20 +110,22 @@ const totalAos = visibleAos.length;
 <section id="today" class="section today-section" aria-labelledby="today-title">
   <div class="section-heading wide">
     <p class="eyebrow">Today</p>
-    <h2 id="today-title">Workouts happening today.</h2>
-    <p>Find a workout, get directions, and show up.</p>
+    <h2 id="today-title">Where are you posting today?</h2>
+    <p>Pick a workout, get directions, and show up 10 minutes early.</p>
   </div>
 
   <div class="today-grid" id="todayGrid">
     {visibleAos.map((ao) => (
       <article
-        class="today-card"
+        class="today-card today-card-compact"
         data-days={(ao.days || '').toLowerCase()}
         data-address={ao.address}
       >
-        <span>{ao.type}</span>
-        <h3>{ao.name}</h3>
-        <p>{ao.region} • {ao.time}</p>
+        <div class="today-main">
+          <span>{ao.type}</span>
+          <h3>{ao.name}</h3>
+          <p>{ao.region} • {ao.city} • {ao.time}</p>
+        </div>
         <a
           class="map-link"
           href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
@@ -143,29 +140,11 @@ const totalAos = visibleAos.length;
  <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for today.</p>
 </section>
 
-      <section class="section regions" aria-labelledby="regions-title">
-        <div class="section-heading">
-          <p class="eyebrow">Regions</p>
-          <h2 id="regions-title">Find your corner of the Midlands.</h2>
-          <p>Start with your region, then filter by workout type, day, or location.</p>
-        </div>
-        <div class="region-grid">
-          {regionCounts.map((item) => (
-            <a class="region-card" href={`#${item.region.toLowerCase().replaceAll(' ', '-')}`} data-region-link={item.region}>
-              <span>{item.region}</span>
-              <strong>{item.count}</strong>
-              <small>AO listings</small>
-              <p>{item.types.length ? item.types.join(' • ') : 'Workouts'}</p>
-            </a>
-          ))}
-        </div>
-      </section>
-
       <section id="find" class="section finder" aria-labelledby="find-title">
         <div class="section-heading wide">
           <p class="eyebrow">AO Finder</p>
-          <h2 id="find-title">Pick a workout and show up.</h2>
-          <p>Use the filters to narrow by region or style. Directions open in Google Maps.</p>
+          <h2 id="find-title">Need something different?</h2>
+          <p>Search every AO in the Midlands by region, city, day, or workout type.</p>
         </div>
         <div class="controls" role="search">
           <label class="search-box">
@@ -200,42 +179,33 @@ const totalAos = visibleAos.length;
           ))}
         </div>
       </section>
-<section class="section map-section" aria-labelledby="map-title">
-  <div class="section-heading wide">
-    <p class="eyebrow">Official Map</p>
-    <h2 id="map-title">Want to see everything nearby?</h2>
-    <p>Use the official F3 Nation map to explore workouts around Lexington and across the Midlands.</p>
-  </div>
-
-  <div class="map-embed">
-    <iframe
-      src="https://map.f3nation.com/?lat=33.990100&lng=-81.252600&zoom=10"
-      title="F3 Nation Map"
-      loading="lazy"
-    ></iframe>
-  </div>
-</section>
-
       <section id="contact" class="section contact-section" aria-labelledby="contact-title">
-        <div class="contact-grid">
+        <div class="contact-grid help-grid">
           <div>
-            <p class="eyebrow">Contact</p>
-            <h2 id="contact-title">Need help finding your first AO?</h2>
-            <p>Send a note and a local PAX can help point you to the best first workout.</p>
+            <p class="eyebrow">Need Help?</p>
+            <h2 id="contact-title">Still not sure where to start?</h2>
+            <p>Send us a note and a local PAX will help point you toward a good first workout. You can also use the official F3 Nation map to explore every listed AO nearby.</p>
+
+            <div class="hero-actions help-actions">
+              <a class="button primary" href="#contactForm">Send us a message</a>
+              <a class="button ghost" href="https://map.f3nation.com/?lat=33.990100&lng=-81.252600&zoom=10" target="_blank" rel="noreferrer">Open official map</a>
+            </div>
           </div>
+
           <form
-  	id="contactForm"
-  	class="contact-form"
-  	action="https://formsubmit.co/f3lexington@gmail.com"
- 	 method="POST"
-	>
-  <input type="hidden" name="_subject" value="New F3 Midlands contact form submission" />
-  <input type="hidden" name="_captcha" value="false" />
-  <input type="hidden" name="_template" value="table" />
-  <input type="hidden" name="_next" value="https://jamesshealy109-sudo.github.io/f3midlands/#contact" />
+            id="contactForm"
+            class="contact-form"
+            action="https://formsubmit.co/f3lexington@gmail.com"
+            method="POST"
+          >
+            <input type="hidden" name="_subject" value="New F3 Midlands contact form submission" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_template" value="table" />
+            <input type="hidden" name="_next" value="https://jamesshealy109-sudo.github.io/f3midlands/#contact" />
+
             <label>Name<input name="name" required /></label>
             <label>Email<input type="email" name="email" required /></label>
-            <label>Message<textarea name="message" rows="5" required></textarea></label>
+            <label>Message<textarea name="message" rows="4" required placeholder="Tell us where you live and what day you want to try." ></textarea></label>
             <button class="button primary" type="submit">Send message</button>
           </form>
         </div>
