@@ -107,61 +107,67 @@ const totalAos = visibleAos.length;
   </div>
 </section>
 
-<section id="today" class="section today-section" aria-labelledby="today-title">
-  <div class="section-heading wide">
+<section id="today" class="section today-section today-compact-section" aria-labelledby="today-title">
+  <div class="section-heading wide today-compact-heading">
     <p class="eyebrow" id="today-eyebrow">Today</p>
     <h2 id="today-title">Where are you posting today?</h2>
-    <p id="today-subtitle">Choose your region first, then pick a workout and show up 10 minutes early.</p>
+    <p id="today-subtitle">Choose a region to see the next listed workouts.</p>
   </div>
 
-  <div class="today-region-picker" aria-label="Choose a region for today's workouts">
-    {regions.map((region) => (
-      <button
-        class="today-region-button"
-        type="button"
-        data-today-region={region}
-      >
-        <span>{region}</span>
-        <small>View workouts</small>
-      </button>
-    ))}
-  </div>
+  <div class="today-shell">
+    <div class="today-toolbar">
+      <div class="today-summary">
+        <strong id="todaySummaryLabel">Today’s workouts</strong>
+        <span id="todaySummaryText">Pick a region below.</span>
+      </div>
 
-  <div class="today-selected-row" id="todaySelectedRow" hidden>
-    <p><strong id="todaySelectedRegion"></strong> workouts</p>
-    <button class="today-clear-button" type="button" id="todayClearButton">Change region</button>
-  </div>
+      <div class="today-region-chips" aria-label="Filter today workouts by region">
+        {regions.map((region) => (
+          <button
+            class="today-chip"
+            type="button"
+            data-today-region={region}
+          >
+            {region}
+          </button>
+        ))}
+      </div>
+    </div>
 
-  <div class="today-grid" id="todayGrid" hidden>
-    {visibleAos.map((ao) => (
-      <article
-        class="today-card today-card-compact"
-        data-region={ao.region}
-        data-schedule={JSON.stringify(ao.schedule || [])}
-        data-fallback-days={(ao.days || '').toLowerCase()}
-        data-fallback-time={ao.time}
-        data-fallback-map={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
-        data-fallback-address={ao.address}
-        hidden
-      >
-        <div class="today-main">
-          <span>{ao.type}</span>
-          <h3>{ao.name}</h3>
-          <p class="today-card-meta">{ao.region} • {ao.city} • {ao.time}</p>
-        </div>
-        <a
-          class="map-link"
-          href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
-          target="_blank"
-          rel="noreferrer"
+    <div class="today-grid today-compact-grid" id="todayGrid" hidden>
+      {visibleAos.map((ao) => (
+        <article
+          class="today-card today-compact-card"
+          data-region={ao.region}
+          data-schedule={JSON.stringify(ao.schedule || [])}
+          data-fallback-days={(ao.days || '').toLowerCase()}
+          data-fallback-time={ao.time}
+          data-fallback-map={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+          data-fallback-address={ao.address}
+          hidden
         >
-          Directions
-        </a>
-      </article>
-    ))}
-  </div>
+          <div class="today-compact-main">
+            <div>
+              <span>{ao.type}</span>
+              <h3>{ao.name}</h3>
+              <p class="today-card-meta">{ao.region} • {ao.city} • {ao.time}</p>
+            </div>
 
-  <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for this region.</p>
+            <a
+              class="map-link today-compact-link"
+              href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Directions
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <p class="today-empty" id="todayEmpty">Pick a region to see workouts.</p>
+  </div>
 </section>
 
       <section id="find" class="section finder finder-app" aria-labelledby="find-title">
@@ -371,7 +377,6 @@ const dayMap = {
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const todayCards = [...document.querySelectorAll('.today-card')];
 const todayEmpty = document.querySelector('#todayEmpty');
-
       const todayTitleEl = document.querySelector('#today-title');
       const todayEyebrowEl = document.querySelector('#today-eyebrow');
       const todaySubtitleEl = document.querySelector('#today-subtitle');
@@ -379,9 +384,8 @@ const todayEmpty = document.querySelector('#todayEmpty');
       const todayCardsEl = [...document.querySelectorAll('.today-card')];
       const todayEmptyEl = document.querySelector('#todayEmpty');
       const todayRegionButtonsEl = [...document.querySelectorAll('[data-today-region]')];
-      const todaySelectedRowEl = document.querySelector('#todaySelectedRow');
-      const todaySelectedRegionEl = document.querySelector('#todaySelectedRegion');
-      const todayClearButtonEl = document.querySelector('#todayClearButton');
+      const todaySummaryLabelEl = document.querySelector('#todaySummaryLabel');
+      const todaySummaryTextEl = document.querySelector('#todaySummaryText');
 
       const todayDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const todayNow = new Date();
@@ -389,17 +393,26 @@ const todayEmpty = document.querySelector('#todayEmpty');
       const todayTargetDate = new Date(todayNow);
       if (todayAfterCutoff) todayTargetDate.setDate(todayTargetDate.getDate() + 1);
       const todayTargetDay = todayDayNames[todayTargetDate.getDay()];
+      const todayLabel = todayAfterCutoff ? 'Tomorrow' : 'Today';
 
       if (todayTitleEl) {
         todayTitleEl.textContent = todayAfterCutoff ? 'Where are you posting tomorrow?' : 'Where are you posting today?';
       }
 
       if (todayEyebrowEl) {
-        todayEyebrowEl.textContent = todayAfterCutoff ? 'Tomorrow' : 'Today';
+        todayEyebrowEl.textContent = todayLabel;
       }
 
       if (todaySubtitleEl) {
         todaySubtitleEl.textContent = `Choose a region to see ${todayTargetDay}'s workouts.`;
+      }
+
+      if (todaySummaryLabelEl) {
+        todaySummaryLabelEl.textContent = `${todayLabel}'s workouts`;
+      }
+
+      if (todaySummaryTextEl) {
+        todaySummaryTextEl.textContent = `Select a region to see ${todayTargetDay}.`;
       }
 
       function getScheduleForTargetDay(card) {
@@ -419,8 +432,6 @@ const todayEmpty = document.querySelector('#todayEmpty');
         });
 
         if (todayGridEl) todayGridEl.hidden = false;
-        if (todaySelectedRowEl) todaySelectedRowEl.hidden = false;
-        if (todaySelectedRegionEl) todaySelectedRegionEl.textContent = region;
 
         todayCardsEl.forEach((card) => {
           const regionMatch = card.dataset.region === region;
@@ -443,7 +454,7 @@ const todayEmpty = document.querySelector('#todayEmpty');
             const mapUrl = slot?.mapUrl || card.dataset.fallbackMap || link?.href;
 
             if (meta) {
-              meta.textContent = [card.dataset.region, city, time, location].filter(Boolean).join(' • ');
+              meta.textContent = [region, city, time, location].filter(Boolean).join(' • ');
             }
 
             if (link && mapUrl) {
@@ -453,23 +464,23 @@ const todayEmpty = document.querySelector('#todayEmpty');
           }
         });
 
-        if (todayEmptyEl) todayEmptyEl.hidden = visible !== 0;
+        if (todaySummaryTextEl) {
+          todaySummaryTextEl.textContent = visible
+            ? `${visible} ${todayTargetDay} workout${visible === 1 ? '' : 's'} in ${region}.`
+            : `No listed ${todayTargetDay} workouts in ${region}.`;
+        }
+
+        if (todayEmptyEl) {
+          todayEmptyEl.textContent = visible
+            ? ''
+            : `No listed ${todayTargetDay} workouts found in ${region}.`;
+          todayEmptyEl.hidden = visible !== 0;
+        }
       }
 
       todayRegionButtonsEl.forEach((button) => {
         button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion));
       });
-
-      if (todayClearButtonEl) {
-        todayClearButtonEl.addEventListener('click', () => {
-          if (todayGridEl) todayGridEl.hidden = true;
-          if (todayEmptyEl) todayEmptyEl.hidden = true;
-          if (todaySelectedRowEl) todaySelectedRowEl.hidden = true;
-          todayCardsEl.forEach((card) => card.hidden = true);
-          todayRegionButtonsEl.forEach((button) => button.classList.remove('is-active'));
-          document.querySelector('#today')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      }
 
     </script>
   </body>
