@@ -164,76 +164,84 @@ const totalAos = visibleAos.length;
   <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for this region.</p>
 </section>
 
-      <section id="find" class="section finder" aria-labelledby="find-title">
-        <div class="section-heading wide">
+      <section id="find" class="section finder finder-app" aria-labelledby="find-title">
+        <div class="section-heading wide finder-heading">
           <p class="eyebrow">AO Finder</p>
-          <h2 id="find-title">Need something different?</h2>
-          <p>Choose a region first. Then search by AO, city, day, location, or workout type.</p>
+          <h2 id="find-title">Find the right AO.</h2>
+          <p>Search the full Midlands directory, narrow by region or workout style, then open directions.</p>
         </div>
 
-        <div class="finder-region-picker" id="finderRegionPicker" aria-label="Choose a region for AO finder">
-          {regions.map((region) => (
-            <button
-              class="finder-region-button"
-              type="button"
-              data-finder-region={region}
-            >
-              <span>{region}</span>
-              <small>
-                {visibleAos.filter((ao) => ao.region === region).length} AOs
-              </small>
-            </button>
-          ))}
-        </div>
-
-        <div class="finder-active-panel" id="finderActivePanel" hidden>
-          <div class="finder-active-header">
-            <div>
-              <p class="eyebrow">Selected Region</p>
-              <h3 id="finderSelectedRegion">Lexington</h3>
-              <p><span id="visibleCount">0</span> AO listings shown</p>
-            </div>
-            <button class="finder-back-button" type="button" id="finderBackButton">Back to regions</button>
-          </div>
-
-          <div class="controls finder-controls" role="search">
-            <label class="search-box">
+        <div class="finder-shell">
+          <div class="finder-toolbar" role="search">
+            <label class="finder-search">
               <span class="sr-only">Search AOs</span>
               <input id="search" type="search" placeholder="Search AO, city, address, day, workout type..." />
             </label>
+
             <select id="typeFilter" aria-label="Filter by workout type">
               <option value="all">All workout types</option>
               {types.map((type) => <option value={type}>{type}</option>)}
             </select>
           </div>
+
+          <div class="finder-region-chips" aria-label="Filter by region">
+            <button class="region-chip is-active" type="button" data-region-filter="all">All</button>
+            {regions.map((region) => (
+              <button class="region-chip" type="button" data-region-filter={region}>{region}</button>
+            ))}
+          </div>
+
+          <div class="finder-summary">
+            <strong><span id="visibleCount">{visibleAos.length}</span> AO listings</strong>
+            <span id="finderSummaryText">across all Midlands regions</span>
+          </div>
         </div>
 
-        <div class="ao-grid" id="aoGrid" hidden>
+        <div class="ao-grid compact-ao-grid" id="aoGrid">
          {visibleAos.map((ao) => (
             <article
-              class="ao-card"
+              class="ao-card compact-ao-card"
               data-region={ao.region}
               data-type={ao.type}
               data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.scheduleSummary || ''}`.toLowerCase()}
               id={ao.region.toLowerCase().replaceAll(' ', '-')}
-              hidden
             >
-              <div class="card-top">
-                <span class="type-pill">{ao.type}</span>
-                <span>{ao.region}</span>
+              <div class="compact-card-main">
+                <div>
+                  <div class="card-top compact-card-top">
+                    <span class="type-pill">{ao.type}</span>
+                    <span>{ao.region}</span>
+                  </div>
+                  <h3>{ao.name}</h3>
+                </div>
+
+                <a
+                  class="map-link compact-map-link"
+                  href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Directions
+                </a>
               </div>
-              <h3>{ao.name}</h3>
-              <dl>
-                <div><dt>When</dt><dd>{ao.days}<br />{ao.time}</dd></div>
-                <div><dt>Where</dt><dd>{ao.address}</dd></div>
-              </dl>
+
+              <div class="compact-card-details">
+                <div>
+                  <dt>When</dt>
+                  <dd>{ao.days}<br />{ao.time}</dd>
+                </div>
+                <div>
+                  <dt>Where</dt>
+                  <dd>{ao.location || ao.address}</dd>
+                </div>
+              </div>
+
               <p>{ao.notes}</p>
-              <a class="map-link" href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`} target="_blank" rel="noreferrer">Directions</a>
             </article>
           ))}
         </div>
 
-        <p class="finder-empty" id="finderEmpty" hidden>No AOs match those filters in this region.</p>
+        <p class="finder-empty" id="finderEmpty" hidden>No AOs match those filters.</p>
       </section>
       <section id="contact" class="section contact-section" aria-labelledby="contact-title">
         <div class="contact-grid help-grid">
@@ -296,14 +304,11 @@ const totalAos = visibleAos.length;
       const typeFilter = document.querySelector('#typeFilter');
       const cards = [...document.querySelectorAll('.ao-card')];
       const visibleCount = document.querySelector('#visibleCount');
-      const aoGrid = document.querySelector('#aoGrid');
-      const finderRegionButtons = [...document.querySelectorAll('[data-finder-region]')];
-      const finderActivePanel = document.querySelector('#finderActivePanel');
-      const finderSelectedRegion = document.querySelector('#finderSelectedRegion');
-      const finderBackButton = document.querySelector('#finderBackButton');
+      const finderSummaryText = document.querySelector('#finderSummaryText');
       const finderEmpty = document.querySelector('#finderEmpty');
+      const regionChips = [...document.querySelectorAll('[data-region-filter]')];
 
-      let selectedFinderRegion = '';
+      let activeRegion = 'all';
 
       function applyFilters() {
         const q = search?.value.trim().toLowerCase() || '';
@@ -311,56 +316,62 @@ const totalAos = visibleAos.length;
         let visible = 0;
 
         cards.forEach((card) => {
-          const matchesRegion = selectedFinderRegion && card.dataset.region === selectedFinderRegion;
           const matchesText = !q || card.dataset.search.includes(q);
+          const matchesRegion = activeRegion === 'all' || card.dataset.region === activeRegion;
           const matchesType = type === 'all' || card.dataset.type === type;
-          const show = matchesRegion && matchesText && matchesType;
+          const show = matchesText && matchesRegion && matchesType;
 
           card.hidden = !show;
           if (show) visible++;
         });
 
         if (visibleCount) visibleCount.textContent = visible;
-        if (finderEmpty) finderEmpty.hidden = !selectedFinderRegion || visible !== 0;
+
+        if (finderSummaryText) {
+          const regionText = activeRegion === 'all' ? 'across all Midlands regions' : `in ${activeRegion}`;
+          const typeText = type === 'all' ? '' : ` • ${type}`;
+          finderSummaryText.textContent = `${regionText}${typeText}`;
+        }
+
+        if (finderEmpty) finderEmpty.hidden = visible !== 0;
       }
 
-      function showFinderRegion(region) {
-        selectedFinderRegion = region;
+      regionChips.forEach((button) => {
+        button.addEventListener('click', () => {
+          activeRegion = button.dataset.regionFilter || 'all';
 
-        finderRegionButtons.forEach((button) => {
-          button.classList.toggle('is-active', button.dataset.finderRegion === region);
+          regionChips.forEach((chip) => chip.classList.toggle('is-active', chip === button));
+
+          applyFilters();
         });
-
-        if (finderSelectedRegion) finderSelectedRegion.textContent = region;
-        if (finderActivePanel) finderActivePanel.hidden = false;
-        if (aoGrid) aoGrid.hidden = false;
-        if (search) search.value = '';
-        if (typeFilter) typeFilter.value = 'all';
-
-        applyFilters();
-
-        document.querySelector('#find')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      finderRegionButtons.forEach((button) => {
-        button.addEventListener('click', () => showFinderRegion(button.dataset.finderRegion));
       });
-
-      if (finderBackButton) {
-        finderBackButton.addEventListener('click', () => {
-          selectedFinderRegion = '';
-          if (finderActivePanel) finderActivePanel.hidden = true;
-          if (aoGrid) aoGrid.hidden = true;
-          if (finderEmpty) finderEmpty.hidden = true;
-          cards.forEach((card) => card.hidden = true);
-          finderRegionButtons.forEach((button) => button.classList.remove('is-active'));
-          document.querySelector('#find')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      }
 
       [search, typeFilter].forEach((el) => {
         if (el) el.addEventListener('input', applyFilters);
       });
+
+      document.querySelectorAll('[data-region-link]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          regionFilter.value = link.dataset.regionLink;
+          applyFilters();
+          document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+const dayMap = {
+  0: ['sun', 'sunday'],
+  1: ['mon', 'monday'],
+  2: ['tue', 'tuesday'],
+  3: ['wed', 'wednesday'],
+  4: ['thu', 'thursday'],
+  5: ['fri', 'friday'],
+  6: ['sat', 'saturday']
+};
+
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const todayCards = [...document.querySelectorAll('.today-card')];
+const todayEmpty = document.querySelector('#todayEmpty');
+
       const todayTitleEl = document.querySelector('#today-title');
       const todayEyebrowEl = document.querySelector('#today-eyebrow');
       const todaySubtitleEl = document.querySelector('#today-subtitle');
