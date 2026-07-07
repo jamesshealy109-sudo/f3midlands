@@ -304,122 +304,41 @@ const dayMap = {
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const todayCards = [...document.querySelectorAll('.today-card')];
 const todayEmpty = document.querySelector('#todayEmpty');
-const todayTitle = document.querySelector('#today-title');
-const todayEyebrow = document.querySelector('#todayEyebrow');
-const todaySubtitle = document.querySelector('#todaySubtitle');
-const todayRegionFilter = document.querySelector('#todayRegionFilter');
 
-function getTargetWorkoutDate() {
-  const now = new Date();
-  const target = new Date(now);
+      const todayTitleEl = document.querySelector('#today-title');
+      const todayEyebrowEl = document.querySelector('#today-eyebrow');
+      const todaySubtitleEl = document.querySelector('#today-subtitle');
+      const todayGridEl = document.querySelector('#todayGrid');
+      const todayCardsEl = [...document.querySelectorAll('.today-card')];
+      const todayEmptyEl = document.querySelector('#todayEmpty');
+      const todayRegionButtonsEl = [...document.querySelectorAll('[data-today-region]')];
+      const todaySelectedRowEl = document.querySelector('#todaySelectedRow');
+      const todaySelectedRegionEl = document.querySelector('#todaySelectedRegion');
+      const todayClearButtonEl = document.querySelector('#todayClearButton');
 
-  if (now.getHours() >= 7) {
-    target.setDate(target.getDate() + 1);
-  }
+      const todayDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayNow = new Date();
+      const todayAfterCutoff = todayNow.getHours() >= 7;
+      const todayTargetDate = new Date(todayNow);
+      if (todayAfterCutoff) todayTargetDate.setDate(todayTargetDate.getDate() + 1);
+      const todayTargetDay = todayDayNames[todayTargetDate.getDay()];
 
-  return {
-    now,
-    target,
-    isTomorrow: now.getHours() >= 7,
-    dayName: dayNames[target.getDay()],
-    tokens: dayMap[target.getDay()]
-  };
-}
-
-function parseSchedule(card) {
-  try {
-    return JSON.parse(card.dataset.schedule || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function applyTodayFilters() {
-  const targetInfo = getTargetWorkoutDate();
-  const selectedRegion = todayRegionFilter?.value || 'all';
-  let todayVisible = 0;
-
-  todayEyebrow.textContent = targetInfo.isTomorrow ? 'Tomorrow' : 'Today';
-  todayTitle.textContent = targetInfo.isTomorrow
-    ? 'Where are you posting tomorrow?'
-    : 'Where are you posting today?';
-  todaySubtitle.textContent = `Showing ${targetInfo.dayName} workouts. Pick a region, get directions, and show up 10 minutes early.`;
-
-  todayCards.forEach((card) => {
-    const schedule = parseSchedule(card);
-    const matches = schedule.filter((slot) => {
-      const day = String(slot.day || '').toLowerCase();
-      return targetInfo.tokens.some((token) => day.includes(token));
-    });
-
-    const fallbackDayMatch = targetInfo.tokens.some((token) =>
-      String(card.dataset.days || '').toLowerCase().includes(token)
-    );
-
-    const matchesRegion = selectedRegion === 'all' || card.dataset.region === selectedRegion;
-    const show = matchesRegion && (matches.length > 0 || fallbackDayMatch);
-
-    card.hidden = !show;
-
-    if (show) {
-      todayVisible++;
-
-      const meta = card.querySelector('.today-meta');
-      const type = card.querySelector('.today-type');
-      const directions = card.querySelector('.today-directions');
-
-      if (matches.length > 0) {
-        const summary = matches
-          .map((slot) => `${slot.time}${slot.location ? ` • ${slot.location}` : ''}`)
-          .join(' / ');
-        const types = [...new Set(matches.map((slot) => slot.type).filter(Boolean))];
-        const firstMatch = matches[0];
-
-        meta.textContent = `${card.dataset.region} • ${summary}`;
-        if (types.length && type) type.textContent = types.join(' / ');
-        if (directions) directions.href = firstMatch.mapUrl || card.dataset.defaultMap;
-      }
-    }
-  });
-
-  todayEmpty.hidden = todayVisible !== 0;
-}
-
-todayRegionFilter?.addEventListener('input', applyTodayFilters);
-applyTodayFilters();
-
-      const todayTitle = document.querySelector('#today-title');
-      const todayEyebrow = document.querySelector('#today-eyebrow');
-      const todaySubtitle = document.querySelector('#today-subtitle');
-      const todayGrid = document.querySelector('#todayGrid');
-      const todayCards = [...document.querySelectorAll('.today-card')];
-      const todayEmpty = document.querySelector('#todayEmpty');
-      const todayRegionButtons = [...document.querySelectorAll('[data-today-region]')];
-      const todaySelectedRow = document.querySelector('#todaySelectedRow');
-      const todaySelectedRegion = document.querySelector('#todaySelectedRegion');
-      const todayClearButton = document.querySelector('#todayClearButton');
-
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const now = new Date();
-      const afterCutoff = now.getHours() >= 7;
-      const targetDate = new Date(now);
-      if (afterCutoff) targetDate.setDate(targetDate.getDate() + 1);
-      const targetDay = dayNames[targetDate.getDay()];
-
-      if (todayTitle) {
-        todayTitle.textContent = afterCutoff ? 'Where are you posting tomorrow?' : 'Where are you posting today?';
-      }
-      if (todayEyebrow) {
-        todayEyebrow.textContent = afterCutoff ? 'Tomorrow' : 'Today';
-      }
-      if (todaySubtitle) {
-        todaySubtitle.textContent = `Choose a region to see ${targetDay}'s workouts.`;
+      if (todayTitleEl) {
+        todayTitleEl.textContent = todayAfterCutoff ? 'Where are you posting tomorrow?' : 'Where are you posting today?';
       }
 
-      function scheduleForDay(card) {
+      if (todayEyebrowEl) {
+        todayEyebrowEl.textContent = todayAfterCutoff ? 'Tomorrow' : 'Today';
+      }
+
+      if (todaySubtitleEl) {
+        todaySubtitleEl.textContent = `Choose a region to see ${todayTargetDay}'s workouts.`;
+      }
+
+      function getScheduleForTargetDay(card) {
         try {
           const schedule = JSON.parse(card.dataset.schedule || '[]');
-          return schedule.find((item) => String(item.day || '').toLowerCase() === targetDay.toLowerCase());
+          return schedule.find((item) => String(item.day || '').toLowerCase() === todayTargetDay.toLowerCase());
         } catch {
           return null;
         }
@@ -428,58 +347,60 @@ applyTodayFilters();
       function showTodayRegion(region) {
         let visible = 0;
 
-        todayRegionButtons.forEach((button) => {
+        todayRegionButtonsEl.forEach((button) => {
           button.classList.toggle('is-active', button.dataset.todayRegion === region);
         });
 
-        todayGrid.hidden = false;
-        todaySelectedRow.hidden = false;
-        todaySelectedRegion.textContent = region;
+        if (todayGridEl) todayGridEl.hidden = false;
+        if (todaySelectedRowEl) todaySelectedRowEl.hidden = false;
+        if (todaySelectedRegionEl) todaySelectedRegionEl.textContent = region;
 
-        todayCards.forEach((card) => {
+        todayCardsEl.forEach((card) => {
           const regionMatch = card.dataset.region === region;
-          const slot = scheduleForDay(card);
-          const fallbackDayMatch = (card.dataset.fallbackDays || '').includes(targetDay.toLowerCase());
+          const slot = getScheduleForTargetDay(card);
+          const fallbackDayMatch = (card.dataset.fallbackDays || '').includes(todayTargetDay.toLowerCase());
           const show = regionMatch && (slot || fallbackDayMatch);
 
           card.hidden = !show;
 
           if (show) {
             visible++;
+
             const meta = card.querySelector('.today-card-meta');
             const link = card.querySelector('.map-link');
+            const title = card.querySelector('h3')?.textContent || 'workout';
 
             const time = slot?.time || card.dataset.fallbackTime || '';
             const city = slot?.city || '';
             const location = slot?.location || '';
-            const address = slot?.address || card.dataset.fallbackAddress || '';
+            const mapUrl = slot?.mapUrl || card.dataset.fallbackMap || link?.href;
 
             if (meta) {
               meta.textContent = [card.dataset.region, city, time, location].filter(Boolean).join(' • ');
             }
 
-            if (link) {
-              link.href = slot?.mapUrl || card.dataset.fallbackMap || link.href;
-              link.setAttribute('aria-label', `Directions to ${card.querySelector('h3')?.textContent || 'workout'}`);
+            if (link && mapUrl) {
+              link.href = mapUrl;
+              link.setAttribute('aria-label', `Directions to ${title}`);
             }
           }
         });
 
-        todayEmpty.hidden = visible !== 0;
+        if (todayEmptyEl) todayEmptyEl.hidden = visible !== 0;
       }
 
-      todayRegionButtons.forEach((button) => {
+      todayRegionButtonsEl.forEach((button) => {
         button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion));
       });
 
-      if (todayClearButton) {
-        todayClearButton.addEventListener('click', () => {
-          todayGrid.hidden = true;
-          todayEmpty.hidden = true;
-          todaySelectedRow.hidden = true;
-          todayCards.forEach((card) => card.hidden = true);
-          todayRegionButtons.forEach((button) => button.classList.remove('is-active'));
-          document.querySelector('#today').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (todayClearButtonEl) {
+        todayClearButtonEl.addEventListener('click', () => {
+          if (todayGridEl) todayGridEl.hidden = true;
+          if (todayEmptyEl) todayEmptyEl.hidden = true;
+          if (todaySelectedRowEl) todaySelectedRowEl.hidden = true;
+          todayCardsEl.forEach((card) => card.hidden = true);
+          todayRegionButtonsEl.forEach((button) => button.classList.remove('is-active'));
+          document.querySelector('#today')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       }
 
