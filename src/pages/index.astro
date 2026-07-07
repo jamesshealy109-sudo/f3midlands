@@ -109,37 +109,48 @@ const totalAos = visibleAos.length;
 
 <section id="today" class="section today-section" aria-labelledby="today-title">
   <div class="section-heading wide">
-    <p class="eyebrow" id="todayEyebrow">Today</p>
+    <p class="eyebrow" id="today-eyebrow">Today</p>
     <h2 id="today-title">Where are you posting today?</h2>
-    <p id="todaySubtitle">Pick a workout, get directions, and show up 10 minutes early.</p>
+    <p id="today-subtitle">Choose your region first, then pick a workout and show up 10 minutes early.</p>
   </div>
 
-  <div class="today-controls" aria-label="Today's workout filters">
-    <label>
-      <span class="sr-only">Filter today’s workouts by region</span>
-      <select id="todayRegionFilter" aria-label="Filter today’s workouts by region">
-        <option value="all">All regions</option>
-        {regions.map((region) => <option value={region}>{region}</option>)}
-      </select>
-    </label>
+  <div class="today-region-picker" aria-label="Choose a region for today's workouts">
+    {regions.map((region) => (
+      <button
+        class="today-region-button"
+        type="button"
+        data-today-region={region}
+      >
+        <span>{region}</span>
+        <small>View workouts</small>
+      </button>
+    ))}
   </div>
 
-  <div class="today-grid" id="todayGrid">
+  <div class="today-selected-row" id="todaySelectedRow" hidden>
+    <p><strong id="todaySelectedRegion"></strong> workouts</p>
+    <button class="today-clear-button" type="button" id="todayClearButton">Change region</button>
+  </div>
+
+  <div class="today-grid" id="todayGrid" hidden>
     {visibleAos.map((ao) => (
       <article
         class="today-card today-card-compact"
         data-region={ao.region}
-        data-days={(ao.days || '').toLowerCase()}
         data-schedule={JSON.stringify(ao.schedule || [])}
-        data-default-map={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+        data-fallback-days={(ao.days || '').toLowerCase()}
+        data-fallback-time={ao.time}
+        data-fallback-map={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+        data-fallback-address={ao.address}
+        hidden
       >
         <div class="today-main">
-          <span class="today-type">{ao.type}</span>
+          <span>{ao.type}</span>
           <h3>{ao.name}</h3>
-          <p class="today-meta">{ao.region} • {ao.city} • {ao.time}</p>
+          <p class="today-card-meta">{ao.region} • {ao.city} • {ao.time}</p>
         </div>
         <a
-          class="map-link today-directions"
+          class="map-link"
           href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
           target="_blank"
           rel="noreferrer"
@@ -149,7 +160,8 @@ const totalAos = visibleAos.length;
       </article>
     ))}
   </div>
- <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for this day and region.</p>
+
+  <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for this region.</p>
 </section>
 
       <section id="find" class="section finder" aria-labelledby="find-title">
@@ -375,6 +387,102 @@ function applyTodayFilters() {
 
 todayRegionFilter?.addEventListener('input', applyTodayFilters);
 applyTodayFilters();
+
+      const todayTitle = document.querySelector('#today-title');
+      const todayEyebrow = document.querySelector('#today-eyebrow');
+      const todaySubtitle = document.querySelector('#today-subtitle');
+      const todayGrid = document.querySelector('#todayGrid');
+      const todayCards = [...document.querySelectorAll('.today-card')];
+      const todayEmpty = document.querySelector('#todayEmpty');
+      const todayRegionButtons = [...document.querySelectorAll('[data-today-region]')];
+      const todaySelectedRow = document.querySelector('#todaySelectedRow');
+      const todaySelectedRegion = document.querySelector('#todaySelectedRegion');
+      const todayClearButton = document.querySelector('#todayClearButton');
+
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const now = new Date();
+      const afterCutoff = now.getHours() >= 7;
+      const targetDate = new Date(now);
+      if (afterCutoff) targetDate.setDate(targetDate.getDate() + 1);
+      const targetDay = dayNames[targetDate.getDay()];
+
+      if (todayTitle) {
+        todayTitle.textContent = afterCutoff ? 'Where are you posting tomorrow?' : 'Where are you posting today?';
+      }
+      if (todayEyebrow) {
+        todayEyebrow.textContent = afterCutoff ? 'Tomorrow' : 'Today';
+      }
+      if (todaySubtitle) {
+        todaySubtitle.textContent = `Choose a region to see ${targetDay}'s workouts.`;
+      }
+
+      function scheduleForDay(card) {
+        try {
+          const schedule = JSON.parse(card.dataset.schedule || '[]');
+          return schedule.find((item) => String(item.day || '').toLowerCase() === targetDay.toLowerCase());
+        } catch {
+          return null;
+        }
+      }
+
+      function showTodayRegion(region) {
+        let visible = 0;
+
+        todayRegionButtons.forEach((button) => {
+          button.classList.toggle('is-active', button.dataset.todayRegion === region);
+        });
+
+        todayGrid.hidden = false;
+        todaySelectedRow.hidden = false;
+        todaySelectedRegion.textContent = region;
+
+        todayCards.forEach((card) => {
+          const regionMatch = card.dataset.region === region;
+          const slot = scheduleForDay(card);
+          const fallbackDayMatch = (card.dataset.fallbackDays || '').includes(targetDay.toLowerCase());
+          const show = regionMatch && (slot || fallbackDayMatch);
+
+          card.hidden = !show;
+
+          if (show) {
+            visible++;
+            const meta = card.querySelector('.today-card-meta');
+            const link = card.querySelector('.map-link');
+
+            const time = slot?.time || card.dataset.fallbackTime || '';
+            const city = slot?.city || '';
+            const location = slot?.location || '';
+            const address = slot?.address || card.dataset.fallbackAddress || '';
+
+            if (meta) {
+              meta.textContent = [card.dataset.region, city, time, location].filter(Boolean).join(' • ');
+            }
+
+            if (link) {
+              link.href = slot?.mapUrl || card.dataset.fallbackMap || link.href;
+              link.setAttribute('aria-label', `Directions to ${card.querySelector('h3')?.textContent || 'workout'}`);
+            }
+          }
+        });
+
+        todayEmpty.hidden = visible !== 0;
+      }
+
+      todayRegionButtons.forEach((button) => {
+        button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion));
+      });
+
+      if (todayClearButton) {
+        todayClearButton.addEventListener('click', () => {
+          todayGrid.hidden = true;
+          todayEmpty.hidden = true;
+          todaySelectedRow.hidden = true;
+          todayCards.forEach((card) => card.hidden = true);
+          todayRegionButtons.forEach((button) => button.classList.remove('is-active'));
+          document.querySelector('#today').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+
     </script>
   </body>
 </html>
