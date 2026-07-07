@@ -109,25 +109,37 @@ const totalAos = visibleAos.length;
 
 <section id="today" class="section today-section" aria-labelledby="today-title">
   <div class="section-heading wide">
-    <p class="eyebrow">Today</p>
+    <p class="eyebrow" id="todayEyebrow">Today</p>
     <h2 id="today-title">Where are you posting today?</h2>
-    <p>Pick a workout, get directions, and show up 10 minutes early.</p>
+    <p id="todaySubtitle">Pick a workout, get directions, and show up 10 minutes early.</p>
+  </div>
+
+  <div class="today-controls" aria-label="Today's workout filters">
+    <label>
+      <span class="sr-only">Filter today’s workouts by region</span>
+      <select id="todayRegionFilter" aria-label="Filter today’s workouts by region">
+        <option value="all">All regions</option>
+        {regions.map((region) => <option value={region}>{region}</option>)}
+      </select>
+    </label>
   </div>
 
   <div class="today-grid" id="todayGrid">
     {visibleAos.map((ao) => (
       <article
         class="today-card today-card-compact"
+        data-region={ao.region}
         data-days={(ao.days || '').toLowerCase()}
-        data-address={ao.address}
+        data-schedule={JSON.stringify(ao.schedule || [])}
+        data-default-map={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
       >
         <div class="today-main">
-          <span>{ao.type}</span>
+          <span class="today-type">{ao.type}</span>
           <h3>{ao.name}</h3>
-          <p>{ao.region} • {ao.city} • {ao.time}</p>
+          <p class="today-meta">{ao.region} • {ao.city} • {ao.time}</p>
         </div>
         <a
-          class="map-link"
+          class="map-link today-directions"
           href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
           target="_blank"
           rel="noreferrer"
@@ -137,7 +149,7 @@ const totalAos = visibleAos.length;
       </article>
     ))}
   </div>
- <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for today.</p>
+ <p class="today-empty" id="todayEmpty" hidden>No listed workouts found for this day and region.</p>
 </section>
 
       <section id="find" class="section finder" aria-labelledby="find-title">
@@ -277,24 +289,92 @@ const dayMap = {
   6: ['sat', 'saturday']
 };
 
-const todayTokens = dayMap[new Date().getDay()];
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const todayCards = [...document.querySelectorAll('.today-card')];
 const todayEmpty = document.querySelector('#todayEmpty');
+const todayTitle = document.querySelector('#today-title');
+const todayEyebrow = document.querySelector('#todayEyebrow');
+const todaySubtitle = document.querySelector('#todaySubtitle');
+const todayRegionFilter = document.querySelector('#todayRegionFilter');
 
-let todayVisible = 0;
+function getTargetWorkoutDate() {
+  const now = new Date();
+  const target = new Date(now);
 
-todayCards.forEach(card => {
-  const days = card.dataset.days.toLowerCase();
-  const show = todayTokens.some(token => days.includes(token));
+  if (now.getHours() >= 7) {
+    target.setDate(target.getDate() + 1);
+  }
 
-  card.hidden = !show;
-
-  if (show) todayVisible++;
-});
-
-if (todayVisible === 0) {
-  todayEmpty.hidden = false;
+  return {
+    now,
+    target,
+    isTomorrow: now.getHours() >= 7,
+    dayName: dayNames[target.getDay()],
+    tokens: dayMap[target.getDay()]
+  };
 }
+
+function parseSchedule(card) {
+  try {
+    return JSON.parse(card.dataset.schedule || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function applyTodayFilters() {
+  const targetInfo = getTargetWorkoutDate();
+  const selectedRegion = todayRegionFilter?.value || 'all';
+  let todayVisible = 0;
+
+  todayEyebrow.textContent = targetInfo.isTomorrow ? 'Tomorrow' : 'Today';
+  todayTitle.textContent = targetInfo.isTomorrow
+    ? 'Where are you posting tomorrow?'
+    : 'Where are you posting today?';
+  todaySubtitle.textContent = `Showing ${targetInfo.dayName} workouts. Pick a region, get directions, and show up 10 minutes early.`;
+
+  todayCards.forEach((card) => {
+    const schedule = parseSchedule(card);
+    const matches = schedule.filter((slot) => {
+      const day = String(slot.day || '').toLowerCase();
+      return targetInfo.tokens.some((token) => day.includes(token));
+    });
+
+    const fallbackDayMatch = targetInfo.tokens.some((token) =>
+      String(card.dataset.days || '').toLowerCase().includes(token)
+    );
+
+    const matchesRegion = selectedRegion === 'all' || card.dataset.region === selectedRegion;
+    const show = matchesRegion && (matches.length > 0 || fallbackDayMatch);
+
+    card.hidden = !show;
+
+    if (show) {
+      todayVisible++;
+
+      const meta = card.querySelector('.today-meta');
+      const type = card.querySelector('.today-type');
+      const directions = card.querySelector('.today-directions');
+
+      if (matches.length > 0) {
+        const summary = matches
+          .map((slot) => `${slot.time}${slot.location ? ` • ${slot.location}` : ''}`)
+          .join(' / ');
+        const types = [...new Set(matches.map((slot) => slot.type).filter(Boolean))];
+        const firstMatch = matches[0];
+
+        meta.textContent = `${card.dataset.region} • ${summary}`;
+        if (types.length && type) type.textContent = types.join(' / ');
+        if (directions) directions.href = firstMatch.mapUrl || card.dataset.defaultMap;
+      }
+    }
+  });
+
+  todayEmpty.hidden = todayVisible !== 0;
+}
+
+todayRegionFilter?.addEventListener('input', applyTodayFilters);
+applyTodayFilters();
     </script>
   </body>
 </html>
