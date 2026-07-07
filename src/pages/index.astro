@@ -361,21 +361,6 @@ const totalAos = visibleAos.length;
       [search, typeFilter].forEach((el) => {
         if (el) el.addEventListener('input', applyFilters);
       });
-      });
-const dayMap = {
-  0: ['sun', 'sunday'],
-  1: ['mon', 'monday'],
-  2: ['tue', 'tuesday'],
-  3: ['wed', 'wednesday'],
-  4: ['thu', 'thursday'],
-  5: ['fri', 'friday'],
-  6: ['sat', 'saturday']
-};
-
-const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const todayCards = [...document.querySelectorAll('.today-card')];
-const todayEmpty = document.querySelector('#todayEmpty');
-
       const todayTitleEl = document.querySelector('#today-title');
       const todayEyebrowEl = document.querySelector('#today-eyebrow');
       const todaySubtitleEl = document.querySelector('#today-subtitle');
