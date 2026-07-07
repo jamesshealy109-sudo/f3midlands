@@ -191,15 +191,15 @@ const totalAos = visibleAos.length;
           </div>
 
           <div class="finder-region-chips" aria-label="Filter by region">
-            <button class="region-chip is-active" type="button" data-region-filter="all">All</button>
+            <button class="region-chip" type="button" data-region-filter="all">All</button>
             {regions.map((region) => (
-              <button class="region-chip" type="button" data-region-filter={region}>{region}</button>
+              <button class:list={["region-chip", region === "Lexington" && "is-active"]} type="button" data-region-filter={region}>{region}</button>
             ))}
           </div>
 
           <div class="finder-summary">
-            <strong><span id="visibleCount">{visibleAos.length}</span> AO listings</strong>
-            <span id="finderSummaryText">across all Midlands regions</span>
+            <strong><span id="visibleCount">{visibleAos.filter((ao) => ao.region === "Lexington").length}</span> AO listings</strong>
+            <span id="finderSummaryText">in Lexington</span>
           </div>
         </div>
 
@@ -211,6 +211,7 @@ const totalAos = visibleAos.length;
               data-type={ao.type}
               data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.scheduleSummary || ''}`.toLowerCase()}
               id={ao.region.toLowerCase().replaceAll(' ', '-')}
+              hidden={ao.region !== 'Lexington'}
             >
               <div class="compact-card-main">
                 <div>
@@ -314,7 +315,7 @@ const totalAos = visibleAos.length;
       const finderEmpty = document.querySelector('#finderEmpty');
       const regionChips = [...document.querySelectorAll('[data-region-filter]')];
 
-      let activeRegion = 'all';
+      let activeRegion = 'Lexington';
 
       function applyFilters() {
         const q = search?.value.trim().toLowerCase() || '';
@@ -355,6 +356,8 @@ const totalAos = visibleAos.length;
       [search, typeFilter].forEach((el) => {
         if (el) el.addEventListener('input', applyFilters);
       });
+
+      applyFilters();
 
       document.querySelectorAll('[data-region-link]').forEach((link) => {
         link.addEventListener('click', (event) => {
