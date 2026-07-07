@@ -767,3 +767,50 @@ footer{
   color:#8DC63F;
   transform:translateY(-2px) scale(1.1);
 }
+
+/* === Dark themed dropdown fixes === */
+.controls select,
+select {
+  color: var(--text);
+  background-color: #141412;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 15px 44px 15px 16px;
+  outline: none;
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gold-2) 50%),
+    linear-gradient(135deg, var(--gold-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 16px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.controls select:hover,
+select:hover {
+  border-color: rgba(240, 209, 128, .7);
+  background-color: #191815;
+}
+
+.controls select:focus,
+select:focus {
+  border-color: var(--gold-2);
+  box-shadow: 0 0 0 3px rgba(240, 209, 128, .16);
+}
+
+.controls select option,
+select option {
+  background-color: #141412;
+  color: #f7f0e6;
+}
+
+.controls select option:checked,
+select option:checked {
+  background-color: #2a2314;
+  color: #f7f0e6;
+}
