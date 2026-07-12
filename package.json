@@ -1,1 +1,21 @@
-{"scripts":{"dev":"astro dev","build":"astro build","preview":"astro preview"},"dependencies":{"@astrojs/check":"latest","astro":"latest","typescript":"latest"},"devDependencies":{}}
+{
+  "name": "f3midlands",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "sync:aos": "node scripts/sync-f3-aos.mjs",
+    "sync:aos:test": "F3_API_FIXTURE=tests/fixtures/f3-api-sample.json F3_MIN_AO_COUNT=1 F3_SYNC_DRY_RUN=true node scripts/sync-f3-aos.mjs",
+    "build": "npm run sync:aos && astro build",
+    "build:static": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "latest",
+    "astro": "latest",
+    "typescript": "latest"
+  },
+  "devDependencies": {}
+}

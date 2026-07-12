@@ -1,0 +1,21 @@
+THIS IS A COMPLETE REPOSITORY REPLACEMENT
+
+Included:
+- GitHub Actions deployment workflow
+- Astro configuration
+- package.json
+- TypeScript configuration
+- Full index.astro page
+- Full global.css stylesheet
+- Full fallback aos.json dataset
+- F3 Nation API synchronization script
+- All image assets referenced by the site
+- Local environment template
+- API fixture test
+- Setup documentation
+
+Before pushing:
+1. Delete or replace the existing repository contents.
+2. Do not copy the old node_modules, dist, or .astro folders.
+3. Add a NEW GitHub Actions secret named F3_NATION_API_KEY.
+4. Push the contents of this folder to main.
