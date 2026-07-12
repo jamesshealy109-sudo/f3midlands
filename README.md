@@ -1,28 +1,8 @@
-# F3 Midlands F3 Nation time parser fix v10
+# Remove AO Website feature v11
 
-Replace this file in the repository:
+Extract this patch into the root of the F3 Midlands repository and overwrite:
 
-- `scripts/sync-f3-aos.mjs`
+- `src/pages/index.astro`
+- `src/styles/global.css`
 
-## Cause of the failure
-
-The official F3 Nation map event endpoint returns compact schedule times such as:
-
-- `0530`
-- `0615`
-
-The previous parser only accepted colon-delimited values such as `05:30`, so the
-153 correctly matched Midlands events were discarded while schedules were built.
-
-## What this patch supports
-
-- `0530`
-- `530`
-- `05:30`
-- `05:30:00`
-- `5:30 AM`
-
-All AO names, organization metadata, workout records, addresses, coordinates,
-directions URLs, counts, filters, and schedules remain sourced from F3 Nation.
-
-The patch was syntax-checked and fixture-tested using compact F3 Nation times.
+This removes the visible **AO Website** button and its styling. Directions continue to use the location coordinates supplied by F3 Nation. The complete AO metadata, including the official website field, may remain in the generated API data as source-of-truth metadata but is no longer displayed or searchable on the website.

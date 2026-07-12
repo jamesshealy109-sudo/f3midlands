@@ -212,7 +212,7 @@ const descriptionRegions = regions.join(', ');
               class="ao-card compact-ao-card"
               data-region={ao.region}
               data-type={ao.type}
-              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.website || ''} ${ao.email || ''} ${ao.scheduleSummary || ''}`.toLowerCase()}
+              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.email || ''} ${ao.scheduleSummary || ''}`.toLowerCase()}
               id={ao.id}
               hidden={ao.region !== defaultRegion}
             >
@@ -234,16 +234,6 @@ const descriptionRegions = regions.join(', ');
                   >
                     Directions
                   </a>
-                  {ao.website && (
-                    <a
-                      class="map-link compact-map-link official-link"
-                      href={ao.website}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      AO Website
-                    </a>
-                  )}
                 </div>
               </div>
 

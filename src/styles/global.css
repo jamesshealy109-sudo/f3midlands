@@ -1180,7 +1180,7 @@ select option:checked {
   }
 }
 
-/* Official F3 Nation AO links and contact details */
+/* F3 Nation AO directions and contact details */
 .compact-card-links {
   display: flex;
   flex: 0 0 auto;
@@ -1188,10 +1188,6 @@ select option:checked {
   gap: 8px;
 }
 
-.official-link {
-  background: rgba(201, 163, 77, .1);
-  border-color: rgba(240, 209, 128, .32);
-}
 
 .ao-contact {
   padding-top: 10px;
