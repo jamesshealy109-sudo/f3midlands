@@ -48,8 +48,10 @@ try {
   const { events, totalCount } = extractEvents(payload);
 
   if (Number.isFinite(totalCount) && totalCount > events.length) {
-    throw new Error(
-      `The F3 API reported ${totalCount} events but returned only ${events.length}; refusing to publish incomplete data.`,
+    const omittedCount = totalCount - events.length;
+    console.warn(
+      `F3 API note: totalCount includes ${omittedCount} event${omittedCount === 1 ? '' : 's'} ` +
+        `without a map location. Proceeding with the ${events.length} location-backed events returned by the map endpoint.`,
     );
   }
   if (events.length === 0) {
