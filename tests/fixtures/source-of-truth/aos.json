@@ -1,0 +1,5 @@
+{"orgs":[
+  {"id":1001,"parentId":100,"name":"Jailbreak","orgType":"ao","isActive":true,"description":"Official AO description","website":"https://example.org/jailbreak","email":"jailbreak@example.org","phone":"555-1111"},
+  {"id":1002,"parentId":110,"name":"Serpent","orgType":"ao","isActive":true,"description":"Official Serpent description"},
+  {"id":2001,"parentId":200,"name":"BrickPile","orgType":"ao","isActive":true,"description":"Official BrickPile description"}
+]}

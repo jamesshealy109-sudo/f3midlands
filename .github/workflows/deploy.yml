@@ -5,7 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    # Refresh F3 Nation data and rebuild four times per day.
     - cron: '17 */6 * * *'
 
 permissions:
@@ -21,19 +20,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
-    # This also makes a secret stored under the github-pages environment
-    # available to the build job. Repository Actions secrets continue to work.
     environment:
       name: github-pages
 
     env:
       F3_NATION_API_KEY: ${{ secrets.F3_NATION_API_KEY }}
       F3_API_CLIENT: f3-midlands-site
-      F3_EVENTS_URL: https://api.f3nation.com/v1/map/event/all?statuses=active&eventCategories=first_f
-      F3_REGION_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
-      F3_MIN_AO_COUNT: '20'
-      F3_SYNC_STRICT: 'false'
+      # These names define the site's official F3 organization scope only.
+      # AO names, counts, descriptions, schedules, locations, coordinates,
+      # directions, links, and contact details all come from F3 Nation.
+      F3_TARGET_ORG_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
+      F3_MIN_AO_COUNT: '5'
 
     steps:
       - name: Checkout complete repository
@@ -48,15 +45,15 @@ jobs:
         shell: bash
         run: |
           if [[ -z "${F3_NATION_API_KEY:-}" ]]; then
-            echo "::error title=F3 Nation API key unavailable::The secret F3_NATION_API_KEY is not available to this job. Add it under Settings > Secrets and variables > Actions > Repository secrets, or under Settings > Environments > github-pages > Environment secrets."
+            echo "::error title=F3 Nation API key unavailable::Add F3_NATION_API_KEY under Settings > Secrets and variables > Actions > Repository secrets."
             exit 1
           fi
           echo "F3_NATION_API_KEY is available to the workflow (${#F3_NATION_API_KEY} characters)."
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
-      - name: Pull active AO data
+      - name: Generate complete AO directory from F3 Nation
         run: npm run sync:aos
 
       - name: Build Astro site

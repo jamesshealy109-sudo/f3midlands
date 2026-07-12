@@ -1,21 +1,11 @@
-THIS IS A COMPLETE REPOSITORY REPLACEMENT
+F3 MIDLANDS SOURCE-OF-TRUTH REPLACEMENT
 
-Included:
-- GitHub Actions deployment workflow
-- Astro configuration
-- package.json
-- TypeScript configuration
-- Full index.astro page
-- Full global.css stylesheet
-- Full fallback aos.json dataset
-- F3 Nation API synchronization script
-- All image assets referenced by the site
-- Local environment template
-- API fixture test
-- Setup documentation
-
-Before pushing:
-1. Delete or replace the existing repository contents.
-2. Do not copy the old node_modules, dist, or .astro folders.
-3. Add a NEW GitHub Actions secret named F3_NATION_API_KEY.
-4. Push the contents of this folder to main.
+1. Keep the repository's hidden .git directory.
+2. Replace the repository contents with this package.
+3. Verify the GitHub Actions secret is named F3_NATION_API_KEY.
+4. Commit and push to main.
+5. Open the Actions run and confirm these messages appear:
+   - F3 target organizations: ...
+   - F3 Nation sync complete: ...
+   - F3 Nation AO counts: ...
+6. The website AO count, region filters, schedules, addresses, and directions now derive from F3 Nation.

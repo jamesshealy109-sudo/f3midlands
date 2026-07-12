@@ -1,0 +1,7 @@
+{"orgs":[
+  {"id":100,"parentId":1,"name":"F3 Lexington","orgType":"region","isActive":true,"description":"Lexington official region","aoCount":2},
+  {"id":200,"parentId":1,"name":"F3 Columbia","orgType":"region","isActive":true,"aoCount":1},
+  {"id":300,"parentId":1,"name":"F3 Lake Murray","orgType":"region","isActive":true,"aoCount":0},
+  {"id":400,"parentId":1,"name":"F3 Camden","orgType":"region","isActive":true,"aoCount":0},
+  {"id":500,"parentId":1,"name":"F3 Saluda","orgType":"region","isActive":true,"aoCount":0}
+]}

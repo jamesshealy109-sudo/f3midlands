@@ -3,16 +3,19 @@ import '../styles/global.css';
 import aos from '../data/aos.json';
 const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false && ao.active !== false && ao.verified !== false);
 
-const regions = ['Lexington', 'Columbia', 'Lake Murray', 'Camden', 'Saluda'];
-const types = [...new Set(visibleAos.map((ao) => ao.type))].sort();
+const regions = [...new Set(visibleAos.map((ao) => ao.region).filter(Boolean))];
+const defaultRegion = regions[0] || 'all';
+const types = [...new Set(visibleAos.map((ao) => ao.type).filter(Boolean))].sort();
 const totalAos = visibleAos.length;
+const regionLine = regions.join(' • ');
+const descriptionRegions = regions.join(', ');
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="F3 Midlands helps men find free outdoor workouts across Lexington, Columbia, Lake Murray, Camden, and Saluda." />
+    <meta name="description" content={`F3 Midlands helps men find free outdoor workouts across ${descriptionRegions || 'the Midlands'}. AO locations and schedules are synchronized from F3 Nation.`} />
     <title>F3 Midlands | Free Outdoor Workouts for Men</title>
     <link
   rel="icon"
@@ -21,7 +24,7 @@ const totalAos = visibleAos.length;
   href="/f3midlands/assets/f3-logo.png"
 />
   </head>
-  <body>
+  <body data-default-region={defaultRegion}>
     <header class="site-header">
       <a class="brand" href="#top" aria-label="F3 Midlands home">
         <img class="header-f3-logo" src="/f3midlands/assets/f3-logo.png" alt="F3" />
@@ -40,7 +43,7 @@ const totalAos = visibleAos.length;
         <div class="hero-bg" aria-hidden="true"></div>
         <div class="hero-content">
           <div class="hero-mark" aria-hidden="true"><img src="/f3midlands/assets/f3-logo.png" alt="" /></div>
-          <p class="eyebrow">Lexington • Columbia • Lake Murray • Camden • Saluda</p>
+          <p class="eyebrow">{regionLine || 'F3 Midlands'}</p>
           <h1>Free outdoor workouts for men.</h1>
           <p class="lead">No fees. No signup. No excuses. Just show up in the gloom and get better with men in your community.</p>
           <div class="hero-actions">
@@ -193,13 +196,13 @@ const totalAos = visibleAos.length;
           <div class="finder-region-chips" aria-label="Filter by region">
             <button class="region-chip" type="button" data-region-filter="all">All</button>
             {regions.map((region) => (
-              <button class:list={["region-chip", region === "Lexington" && "is-active"]} type="button" data-region-filter={region}>{region}</button>
+              <button class:list={["region-chip", region === defaultRegion && "is-active"]} type="button" data-region-filter={region}>{region}</button>
             ))}
           </div>
 
           <div class="finder-summary">
-            <strong><span id="visibleCount">{visibleAos.filter((ao) => ao.region === "Lexington").length}</span> AO listings</strong>
-            <span id="finderSummaryText">in Lexington</span>
+            <strong><span id="visibleCount">{visibleAos.filter((ao) => ao.region === defaultRegion).length}</span> AO listings</strong>
+            <span id="finderSummaryText">in {defaultRegion}</span>
           </div>
         </div>
 
@@ -209,9 +212,9 @@ const totalAos = visibleAos.length;
               class="ao-card compact-ao-card"
               data-region={ao.region}
               data-type={ao.type}
-              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.scheduleSummary || ''}`.toLowerCase()}
-              id={ao.region.toLowerCase().replaceAll(' ', '-')}
-              hidden={ao.region !== 'Lexington'}
+              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.website || ''} ${ao.email || ''} ${ao.scheduleSummary || ''}`.toLowerCase()}
+              id={ao.id}
+              hidden={ao.region !== defaultRegion}
             >
               <div class="compact-card-main">
                 <div>
@@ -222,14 +225,26 @@ const totalAos = visibleAos.length;
                   <h3>{ao.name}</h3>
                 </div>
 
-                <a
-                  class="map-link compact-map-link"
-                  href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Directions
-                </a>
+                <div class="compact-card-links">
+                  <a
+                    class="map-link compact-map-link"
+                    href={ao.mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Directions
+                  </a>
+                  {ao.website && (
+                    <a
+                      class="map-link compact-map-link official-link"
+                      href={ao.website}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      AO Website
+                    </a>
+                  )}
+                </div>
               </div>
 
               <div class="compact-card-details">
@@ -244,6 +259,13 @@ const totalAos = visibleAos.length;
               </div>
 
               <p>{ao.notes}</p>
+              {(ao.email || ao.phone) && (
+                <p class="ao-contact">
+                  {ao.email && <a href={`mailto:${ao.email}`}>{ao.email}</a>}
+                  {ao.email && ao.phone && <span> • </span>}
+                  {ao.phone && <a href={`tel:${ao.phone}`}>{ao.phone}</a>}
+                </p>
+              )}
             </article>
           ))}
         </div>
@@ -330,7 +352,8 @@ const totalAos = visibleAos.length;
       const finderEmpty = document.querySelector('#finderEmpty');
       const regionChips = [...document.querySelectorAll('[data-region-filter]')];
 
-      let activeRegion = 'Lexington';
+      const defaultRegion = document.body.dataset.defaultRegion || 'all';
+      let activeRegion = defaultRegion;
 
       function applyFilters() {
         const q = search?.value.trim().toLowerCase() || '';
@@ -374,14 +397,6 @@ const totalAos = visibleAos.length;
 
       applyFilters();
 
-      document.querySelectorAll('[data-region-link]').forEach((link) => {
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          regionFilter.value = link.dataset.regionLink;
-          applyFilters();
-          document.querySelector('#find').scrollIntoView({ behavior: 'smooth' });
-        });
-      });
 const dayMap = {
   0: ['sun', 'sunday'],
   1: ['mon', 'monday'],
@@ -499,6 +514,8 @@ const todayEmpty = document.querySelector('#todayEmpty');
       todayRegionButtonsEl.forEach((button) => {
         button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion));
       });
+
+      if (defaultRegion !== 'all') showTodayRegion(defaultRegion);
 
     </script>
   </body>

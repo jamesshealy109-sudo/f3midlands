@@ -1,26 +1,25 @@
-.env.example	363 bytes
-.github/workflows/deploy.yml	1398 bytes
-.gitignore	60 bytes
-FULL-REPO-MANIFEST.txt	0 bytes
-README.md	2167 bytes
-REPLACEMENT-CHECKLIST.txt	630 bytes
-astro.config.mjs	173 bytes
-package.json	595 bytes
-public/.nojekyll	0 bytes
-public/assets/columbia-hero.jpg	2463231 bytes
-public/assets/f3-logo.jpg	57005 bytes
-public/assets/f3-logo.png	423423 bytes
-public/assets/strataworks-logo.png	2194329 bytes
-scripts/sync-f3-aos.mjs	15466 bytes
-src/data/aos.json	203201 bytes
-src/pages/index.astro	18853 bytes
-src/styles/global.css	21244 bytes
-tests/fixtures/f3-api-sample.json	2106 bytes
-tsconfig.json	90 bytes
-
-Validation:
-- Node syntax check passed for scripts/sync-f3-aos.mjs
-- Fixture sync test passed: 3 API events -> 1 grouped AO
-- JSON validation passed for package, TypeScript config, AO fallback, and fixture
-- All locally referenced image assets are included
-- No F3 API key is stored in this repository
+.env.example
+.github/workflows/deploy.yml
+.gitignore
+FULL-REPO-MANIFEST.txt
+README.md
+REPLACEMENT-CHECKLIST.txt
+astro.config.mjs
+package-lock.json
+package.json
+public/.nojekyll
+public/assets/columbia-hero.jpg
+public/assets/f3-logo.jpg
+public/assets/f3-logo.png
+public/assets/strataworks-logo.png
+scripts/sync-f3-aos.mjs
+src/data/aos.json
+src/pages/index.astro
+src/styles/global.css
+tests/fixtures/source-of-truth/aos.json
+tests/fixtures/source-of-truth/areas.json
+tests/fixtures/source-of-truth/events.json
+tests/fixtures/source-of-truth/markers.json
+tests/fixtures/source-of-truth/regions.json
+tests/fixtures/source-of-truth/sectors.json
+tsconfig.json
