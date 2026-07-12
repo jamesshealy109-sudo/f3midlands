@@ -1,24 +1,28 @@
-# F3 Midlands public npm isolation fix v9
+# F3 Midlands F3 Nation time parser fix v10
 
-Cancel the currently hung GitHub Actions run before applying this patch.
+Replace this file in the repository:
 
-Extract this ZIP into the repository root and overwrite:
+- `scripts/sync-f3-aos.mjs`
 
-- `.github/workflows/deploy.yml`
-- `.npmrc`
-- `package.json`
-- `package-lock.json`
+## Cause of the failure
 
-## Why this version is different
+The official F3 Nation map event endpoint returns compact schedule times such as:
 
-The workflow now:
+- `0530`
+- `0615`
 
-- disables `actions/setup-node` package-manager caching;
-- repairs any remaining private OpenAI registry URLs in the lockfile;
-- fails immediately if any private registry markers remain;
-- removes the runner's user-level `.npmrc`;
-- forces `https://registry.npmjs.org/` through environment, npm config, and the `npm ci` command;
-- uses a fresh `/tmp/f3midlands-npm-cache` for every run;
-- does not use `--prefer-offline`.
+The previous parser only accepted colon-delimited values such as `05:30`, so the
+153 correctly matched Midlands events were discarded while schedules were built.
 
-The F3 Nation source-of-truth generation and deployment steps are unchanged.
+## What this patch supports
+
+- `0530`
+- `530`
+- `05:30`
+- `05:30:00`
+- `5:30 AM`
+
+All AO names, organization metadata, workout records, addresses, coordinates,
+directions URLs, counts, filters, and schedules remain sourced from F3 Nation.
+
+The patch was syntax-checked and fixture-tested using compact F3 Nation times.

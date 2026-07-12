@@ -561,6 +561,12 @@ function printDiagnostics({ allOrgs, targetOrgs, aos, aoAssignments, events, tar
       .slice(0, 30)
       .join(', ') || '(none)'}`,
   );
+  console.error(
+    `Target event time samples: ${targetEvents
+      .slice(0, 12)
+      .map((event) => `${event.startTime ?? '(none)'}-${event.endTime ?? '(none)'}`)
+      .join(', ') || '(none)'}`,
+  );
 }
 
 function canonicalOrgName(value) {
@@ -610,13 +616,40 @@ function normalizeDay(value) {
 }
 
 function normalize24HourTime(value) {
-  const text = cleanText(value);
-  if (!text) return '';
-  const match = text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (!match) return '';
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (hours > 23 || minutes > 59) return '';
+  const raw = cleanText(value);
+  if (!raw) return '';
+
+  // F3 Nation currently returns compact database-style times such as "0530"
+  // and "0615" from the map event endpoint. Keep support for colon-delimited
+  // values as well because other endpoints and fixtures may return "05:30"
+  // or "05:30:00".
+  const compact = raw.replace(/\s+/g, '');
+
+  let hours;
+  let minutes;
+
+  const compactMatch = compact.match(/^(\d{3,4})$/);
+  if (compactMatch) {
+    const padded = compactMatch[1].padStart(4, '0');
+    hours = Number(padded.slice(0, 2));
+    minutes = Number(padded.slice(2, 4));
+  } else {
+    const colonMatch = compact.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (colonMatch) {
+      hours = Number(colonMatch[1]);
+      minutes = Number(colonMatch[2]);
+    } else {
+      const twelveHourMatch = raw.match(/^(\d{1,2}):(\d{2})\s*([ap]m)$/i);
+      if (!twelveHourMatch) return '';
+      hours = Number(twelveHourMatch[1]);
+      minutes = Number(twelveHourMatch[2]);
+      if (hours < 1 || hours > 12) return '';
+      const suffix = twelveHourMatch[3].toLowerCase();
+      hours = hours % 12 + (suffix === 'pm' ? 12 : 0);
+    }
+  }
+
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours > 23 || minutes > 59) return '';
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
