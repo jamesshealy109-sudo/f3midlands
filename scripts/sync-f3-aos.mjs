@@ -65,7 +65,7 @@ try {
   const aos = buildAoDirectory(activeWorkoutEvents, fallbackAos);
 
   if (aos.length < MIN_AO_COUNT) {
-    printDiagnosticSummary(events, activeWorkoutEvents, aos);
+    printDiagnosticSummary(events, activeWorkoutEvents, aos, fallbackAos);
   }
 
   if (aos.length < MIN_AO_COUNT) {
@@ -198,6 +198,7 @@ function isFirstFCategory(categoryValue, typeNameValue = '') {
 
 function buildAoDirectory(events, fallbackAos) {
   const fallbackIndex = buildFallbackIndex(fallbackAos);
+  const fallbackAliasIndex = buildFallbackAliasIndex(fallbackAos);
   const fallbackCityIndex = buildFallbackCityIndex(fallbackAos);
   const groups = new Map();
 
@@ -205,7 +206,13 @@ function buildAoDirectory(events, fallbackAos) {
     const aoName = resolveAoName(event);
     if (!aoName) continue;
 
-    const fallbackMatches = fallbackIndex.get(normalizeText(aoName)) || [];
+    const fallbackMatches = findFallbackMatches(
+      event,
+      aoName,
+      fallbackAos,
+      fallbackIndex,
+      fallbackAliasIndex,
+    );
     const region = resolveRegion(event, fallbackMatches, fallbackCityIndex);
     if (!region) continue;
 
@@ -347,32 +354,106 @@ function resolveAoName(event) {
 }
 
 function resolveRegion(event, fallbackMatches, fallbackCityIndex) {
-  const candidates = [
-    event?.regionName,
-    event?.region,
-    event?.region?.name,
-    ...(Array.isArray(event.regions) ? event.regions.map((item) => item?.regionName || item?.name) : []),
-  ].filter(Boolean);
-
-  for (const target of TARGET_REGIONS) {
-    const targetNormalized = normalizeText(target);
-    if (
-      candidates.some((candidate) => {
-        const normalized = normalizeText(candidate).replace(/^f3\s+/, '');
-        return normalized.includes(targetNormalized) || targetNormalized.includes(normalized);
-      })
-    ) {
-      return target;
-    }
-  }
-
+  const candidates = getRegionCandidates(event);
   const fallbackRegions = unique(
     fallbackMatches.map((item) => item?.region).filter((region) => TARGET_REGIONS.includes(region)),
   );
+
+  // A known AO from the existing directory is the strongest signal. This also
+  // handles F3 Nation records whose immediate region is simply "F3 Midlands".
   if (fallbackRegions.length === 1) return fallbackRegions[0];
 
-  const city = normalizeText(event?.locationCity || event?.city);
-  return city ? fallbackCityIndex.get(city) || null : null;
+  const state = normalizeState(event?.locationState, event?.locationZip, event?.location);
+  const isSc = state === 'SC';
+
+  // Prefer an explicit official subregion name when it is present. Requiring an
+  // SC location prevents accidentally importing Lexington, Kentucky, etc.
+  if (isSc) {
+    for (const target of TARGET_REGIONS) {
+      if (candidates.some((candidate) => regionCandidateMatches(candidate, target))) {
+        return target;
+      }
+    }
+  }
+
+  const city = normalizeCity(event?.locationCity || event?.city || extractCityFromLocation(event?.location));
+  const cityRegion = resolveRegionFromCity(city, candidates, fallbackCityIndex);
+  if (isSc && cityRegion) return cityRegion;
+
+  // Some older records have a missing/odd state but still have a unique known AO.
+  if (!state && fallbackRegions.length === 1) return fallbackRegions[0];
+
+  return null;
+}
+
+function getRegionCandidates(event) {
+  return [
+    event?.regionName,
+    typeof event?.region === 'string' ? event.region : event?.region?.name,
+    ...(Array.isArray(event?.regions)
+      ? event.regions.map((item) => item?.regionName || item?.name)
+      : []),
+  ]
+    .map(cleanText)
+    .filter(Boolean);
+}
+
+function regionCandidateMatches(candidate, target) {
+  const normalized = normalizeText(candidate).replace(/^f3\s+/, '');
+  const targetNormalized = normalizeText(target);
+  return normalized === targetNormalized || normalized.includes(targetNormalized);
+}
+
+function resolveRegionFromCity(city, candidates, fallbackCityIndex) {
+  if (!city) return null;
+
+  const exactFallback = fallbackCityIndex.get(city);
+  if (exactFallback) return exactFallback;
+
+  const aliases = [
+    { region: 'Lexington', cities: ['lexington', 'west columbia', 'cayce', 'batesburg', 'batesburg leesville', 'leesville', 'gilbert', 'gaston', 'pelion', 'red bank', 'oak grove', 'swansea', 'south congaree', 'springdale'] },
+    { region: 'Columbia', cities: ['blythewood', 'hopkins', 'forest acres', 'eastover', 'arcadia lakes'] },
+    { region: 'Lake Murray', cities: ['irmo', 'chapin', 'ballentine', 'little mountain', 'prosperity', 'peak'] },
+    { region: 'Camden', cities: ['camden', 'lugoff', 'kershaw', 'bethune'] },
+    { region: 'Saluda', cities: ['saluda', 'ridge spring', 'ward'] },
+  ];
+
+  for (const entry of aliases) {
+    if (!TARGET_REGIONS.includes(entry.region)) continue;
+    if (entry.cities.some((alias) => city === alias || city.includes(alias))) return entry.region;
+  }
+
+  // Columbia is shared by Columbia and Lake Murray. Let the official region win
+  // when possible; otherwise default a brand-new Columbia AO to Columbia.
+  if (city === 'columbia') {
+    if (candidates.some((candidate) => regionCandidateMatches(candidate, 'Lake Murray'))) {
+      return TARGET_REGIONS.includes('Lake Murray') ? 'Lake Murray' : null;
+    }
+    return TARGET_REGIONS.includes('Columbia') ? 'Columbia' : null;
+  }
+
+  return null;
+}
+
+function normalizeState(value, zipValue, fullLocationValue) {
+  const normalized = normalizeText(value);
+  if (normalized === 'sc' || normalized === 'south carolina') return 'SC';
+  if (/^29\d{3}(?:-\d{4})?$/.test(cleanText(zipValue))) return 'SC';
+  if (/(?:,|\s)sc(?:\s|,|$)/i.test(cleanText(fullLocationValue))) return 'SC';
+  return normalized ? normalized.toUpperCase() : '';
+}
+
+function normalizeCity(value) {
+  return normalizeText(value)
+    .replace(/\b(?:south carolina|sc)\b/g, ' ')
+    .replace(/\b29\d{3}(?:-\d{4})?\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractCityFromLocation(value) {
+  const parts = cleanText(value).split(',').map(cleanText).filter(Boolean);
+  return parts.length >= 2 ? parts.at(-2) : '';
 }
 
 function getWorkoutType(event, aoName) {
@@ -401,6 +482,66 @@ function buildFallbackIndex(aos) {
   return index;
 }
 
+function buildFallbackAliasIndex(aos) {
+  const index = new Map();
+  for (const ao of Array.isArray(aos) ? aos : []) {
+    for (const alias of getAoAliases(ao?.name)) {
+      if (!index.has(alias)) index.set(alias, []);
+      index.get(alias).push(ao);
+    }
+  }
+  return index;
+}
+
+function findFallbackMatches(event, aoName, fallbackAos, fallbackIndex, fallbackAliasIndex) {
+  const rawNames = unique([
+    aoName,
+    event?.name,
+    event?.parent,
+    ...(Array.isArray(event?.parents) ? event.parents.map((item) => item?.parentName) : []),
+  ].map(cleanText).filter(Boolean));
+
+  const matches = [];
+  for (const rawName of rawNames) {
+    matches.push(...(fallbackIndex.get(normalizeText(rawName)) || []));
+    for (const alias of getAoAliases(rawName)) {
+      matches.push(...(fallbackAliasIndex.get(alias) || []));
+    }
+  }
+
+  if (matches.length) return uniqueBy(matches, (item) => `${item?.region}|${item?.name}`);
+
+  // Final conservative fuzzy pass for punctuation and labels such as
+  // "F3 Jailbreak" or "Jailbreak Bootcamp".
+  const eventAliases = new Set(rawNames.flatMap(getAoAliases));
+  for (const ao of Array.isArray(fallbackAos) ? fallbackAos : []) {
+    const aliases = getAoAliases(ao?.name);
+    if (aliases.some((alias) => [...eventAliases].some((candidate) => fuzzyAoAliasMatch(alias, candidate)))) {
+      matches.push(ao);
+    }
+  }
+
+  return uniqueBy(matches, (item) => `${item?.region}|${item?.name}`);
+}
+
+function getAoAliases(value) {
+  const normalized = normalizeText(value);
+  if (!normalized) return [];
+
+  const stripped = normalized
+    .replace(/^(?:f3|ao)\s+/, '')
+    .replace(/\s+(?:ao|workout|bootcamp|run|ruck|running|strength|kettlebell|kettle bells)$/g, '')
+    .trim();
+  const withoutThe = stripped.replace(/^the\s+/, '').trim();
+  return unique([normalized, stripped, withoutThe].filter((item) => item.length >= 3));
+}
+
+function fuzzyAoAliasMatch(left, right) {
+  if (!left || !right || Math.min(left.length, right.length) < 4) return false;
+  if (left === right) return true;
+  return left.length >= 6 && right.length >= 6 && (left.includes(right) || right.includes(left));
+}
+
 function buildFallbackCityIndex(aos) {
   const regionSets = new Map();
 
@@ -423,7 +564,7 @@ function chooseFallback(matches, region) {
   return matches.find((item) => item?.region === region) || matches[0] || null;
 }
 
-function printDiagnosticSummary(events, activeWorkoutEvents, aos) {
+function printDiagnosticSummary(events, activeWorkoutEvents, aos, fallbackAosForDiagnostics) {
   const categories = unique(
     events.flatMap((event) =>
       (Array.isArray(event?.eventTypes) ? event.eventTypes : []).map(
@@ -443,6 +584,18 @@ function printDiagnosticSummary(events, activeWorkoutEvents, aos) {
   )
     .filter(Boolean)
     .slice(0, 40);
+
+  const scEvents = events.filter((event) =>
+    normalizeState(event?.locationState, event?.locationZip, event?.location) === 'SC',
+  );
+  const scCities = unique(scEvents.map((event) => normalizeCity(event?.locationCity)).filter(Boolean)).sort();
+  const scRegions = unique(scEvents.flatMap((event) => getRegionCandidates(event))).sort();
+  const knownAoNameHits = scEvents.filter((event) => {
+    const aoName = resolveAoName(event);
+    return fallbackAosForDiagnostics.some((ao) =>
+      getAoAliases(ao?.name).some((alias) => getAoAliases(aoName).some((candidate) => fuzzyAoAliasMatch(alias, candidate))),
+    );
+  }).length;
 
   const sample = events.slice(0, 5).map((event) => ({
     id: event?.id ?? null,
@@ -464,6 +617,8 @@ function printDiagnosticSummary(events, activeWorkoutEvents, aos) {
   );
   console.error(`F3 API categories seen: ${categories.join(', ') || '(none)'}`);
   console.error(`F3 API regions seen: ${regions.join(', ') || '(none)'}`);
+  console.error(`F3 API SC diagnostics: ${scEvents.length} SC events; known-AO name hits=${knownAoNameHits}; cities=${scCities.slice(0, 50).join(', ') || '(none)'}`);
+  console.error(`F3 API SC regions seen: ${scRegions.slice(0, 50).join(', ') || '(none)'}`);
   console.error(`F3 API sample events: ${JSON.stringify(sample)}`);
 }
 

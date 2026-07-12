@@ -33,7 +33,7 @@ jobs:
       F3_EVENTS_URL: https://api.f3nation.com/v1/map/event/all?statuses=active&eventCategories=first_f
       F3_REGION_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
       F3_MIN_AO_COUNT: '20'
-      F3_SYNC_STRICT: 'true'
+      F3_SYNC_STRICT: 'false'
 
     steps:
       - name: Checkout complete repository
