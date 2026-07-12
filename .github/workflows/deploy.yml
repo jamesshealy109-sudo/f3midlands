@@ -29,7 +29,8 @@ jobs:
 
     env:
       F3_NATION_API_KEY: ${{ secrets.F3_NATION_API_KEY }}
-      F3_API_CLIENT: scalar-api
+      F3_API_CLIENT: f3-midlands-site
+      F3_EVENTS_URL: https://api.f3nation.com/v1/map/event/all?statuses=active&eventCategories=first_f
       F3_REGION_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
       F3_MIN_AO_COUNT: '20'
       F3_SYNC_STRICT: 'true'

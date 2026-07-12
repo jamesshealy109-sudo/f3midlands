@@ -14,9 +14,9 @@ const envPath = path.join(repositoryRoot, '.env');
 await loadLocalEnv(envPath);
 
 const API_BASE_URL = (process.env.F3_API_BASE_URL || 'https://api.f3nation.com/v1').replace(/\/$/, '');
-const EVENTS_URL = process.env.F3_EVENTS_URL || `${API_BASE_URL}/event`;
+const EVENTS_URL = process.env.F3_EVENTS_URL || `${API_BASE_URL}/map/event/all?statuses=active&eventCategories=first_f`;
 const API_KEY = process.env.F3_NATION_API_KEY?.trim();
-const API_CLIENT = process.env.F3_API_CLIENT?.trim() || 'scalar-api';
+const API_CLIENT = process.env.F3_API_CLIENT?.trim() || 'f3-midlands-site';
 const STRICT = /^true$/i.test(process.env.F3_SYNC_STRICT || 'false');
 const DRY_RUN = /^true$/i.test(process.env.F3_SYNC_DRY_RUN || 'false');
 const MIN_AO_COUNT = parsePositiveInteger(process.env.F3_MIN_AO_COUNT, 5);
@@ -52,8 +52,19 @@ try {
       `The F3 API reported ${totalCount} events but returned only ${events.length}; refusing to publish incomplete data.`,
     );
   }
+  if (events.length === 0) {
+    throw new Error(
+      `The F3 API returned zero events from ${EVENTS_URL}. ` +
+        `The API key was accepted, but this endpoint returned no data.`,
+    );
+  }
+
   const activeWorkoutEvents = events.filter(isActivePublicWorkout);
   const aos = buildAoDirectory(activeWorkoutEvents, fallbackAos);
+
+  if (aos.length < MIN_AO_COUNT) {
+    printDiagnosticSummary(events, activeWorkoutEvents, aos);
+  }
 
   if (aos.length < MIN_AO_COUNT) {
     throw new Error(
@@ -130,6 +141,7 @@ function extractEvents(payload) {
   const candidates = [
     payload,
     payload?.data,
+    payload?.data?.json,
     payload?.json,
     payload?.result,
     payload?.result?.data,
@@ -154,28 +166,45 @@ function extractEvents(payload) {
 }
 
 function isActivePublicWorkout(event) {
-  if (!event || event.isActive === false || event.isPrivate === true) return false;
+  if (!event || toBoolean(event.isActive, true) === false || toBoolean(event.isPrivate, false) === true) {
+    return false;
+  }
   if (!event.dayOfWeek || !event.startTime) return false;
 
   const eventTypes = Array.isArray(event.eventTypes) ? event.eventTypes : [];
   if (eventTypes.length === 0) return true;
 
-  return eventTypes.some((eventType) => {
-    const category = normalizeText(eventType?.eventCategory || '');
-    return !category || category === 'first f' || category === '1st f' || category === 'firstf';
-  });
+  return eventTypes.some((eventType) => isFirstFCategory(eventType?.eventCategory, eventType?.eventTypeName));
+}
+
+function isFirstFCategory(categoryValue, typeNameValue = '') {
+  const category = normalizeText(categoryValue || '');
+  const typeName = normalizeText(typeNameValue || '');
+
+  if (!category) {
+    return !/^2nd f|^second f|^3rd f|^third f/.test(typeName);
+  }
+
+  return (
+    category === 'first f' ||
+    category === '1st f' ||
+    category === 'firstf' ||
+    category.startsWith('first f ') ||
+    category.startsWith('1st f ')
+  );
 }
 
 function buildAoDirectory(events, fallbackAos) {
   const fallbackIndex = buildFallbackIndex(fallbackAos);
+  const fallbackCityIndex = buildFallbackCityIndex(fallbackAos);
   const groups = new Map();
 
   for (const event of events) {
-    const aoName = cleanText(event.parent) || cleanText(event.name);
+    const aoName = resolveAoName(event);
     if (!aoName) continue;
 
     const fallbackMatches = fallbackIndex.get(normalizeText(aoName)) || [];
-    const region = resolveRegion(event, fallbackMatches);
+    const region = resolveRegion(event, fallbackMatches, fallbackCityIndex);
     if (!region) continue;
 
     const day = normalizeDay(event.dayOfWeek);
@@ -304,10 +333,23 @@ function finalizeAo(group) {
   };
 }
 
-function resolveRegion(event, fallbackMatches) {
+function resolveAoName(event) {
+  return (
+    cleanText(event?.parent) ||
+    cleanText(event?.aoName) ||
+    cleanText(event?.ao?.name) ||
+    cleanText(event?.aos?.[0]?.aoName) ||
+    cleanText(event?.parents?.[0]?.parentName) ||
+    cleanText(event?.name)
+  );
+}
+
+function resolveRegion(event, fallbackMatches, fallbackCityIndex) {
   const candidates = [
-    ...(Array.isArray(event.regions) ? event.regions.map((item) => item?.regionName) : []),
-    ...(Array.isArray(event.parents) ? event.parents.map((item) => item?.parentName) : []),
+    event?.regionName,
+    event?.region,
+    event?.region?.name,
+    ...(Array.isArray(event.regions) ? event.regions.map((item) => item?.regionName || item?.name) : []),
   ].filter(Boolean);
 
   for (const target of TARGET_REGIONS) {
@@ -325,15 +367,17 @@ function resolveRegion(event, fallbackMatches) {
   const fallbackRegions = unique(
     fallbackMatches.map((item) => item?.region).filter((region) => TARGET_REGIONS.includes(region)),
   );
-  return fallbackRegions.length === 1 ? fallbackRegions[0] : null;
+  if (fallbackRegions.length === 1) return fallbackRegions[0];
+
+  const city = normalizeText(event?.locationCity || event?.city);
+  return city ? fallbackCityIndex.get(city) || null : null;
 }
 
 function getWorkoutType(event, aoName) {
   const names = unique(
     (Array.isArray(event.eventTypes) ? event.eventTypes : [])
       .filter((item) => {
-        const category = normalizeText(item?.eventCategory || '');
-        return !category || category === 'first f' || category === '1st f' || category === 'firstf';
+        return isFirstFCategory(item?.eventCategory, item?.eventTypeName);
       })
       .map((item) => cleanText(item?.eventTypeName))
       .filter(Boolean),
@@ -355,8 +399,79 @@ function buildFallbackIndex(aos) {
   return index;
 }
 
+function buildFallbackCityIndex(aos) {
+  const regionSets = new Map();
+
+  for (const ao of Array.isArray(aos) ? aos : []) {
+    const city = normalizeText(ao?.city);
+    const region = cleanText(ao?.region);
+    if (!city || !TARGET_REGIONS.includes(region)) continue;
+    if (!regionSets.has(city)) regionSets.set(city, new Set());
+    regionSets.get(city).add(region);
+  }
+
+  const index = new Map();
+  for (const [city, regions] of regionSets) {
+    if (regions.size === 1) index.set(city, [...regions][0]);
+  }
+  return index;
+}
+
 function chooseFallback(matches, region) {
   return matches.find((item) => item?.region === region) || matches[0] || null;
+}
+
+function printDiagnosticSummary(events, activeWorkoutEvents, aos) {
+  const categories = unique(
+    events.flatMap((event) =>
+      (Array.isArray(event?.eventTypes) ? event.eventTypes : []).map(
+        (item) => cleanText(item?.eventCategory) || '(blank)',
+      ),
+    ),
+  ).slice(0, 20);
+
+  const regions = unique(
+    events.flatMap((event) => [
+      cleanText(event?.regionName),
+      typeof event?.region === 'string' ? cleanText(event.region) : cleanText(event?.region?.name),
+      ...(Array.isArray(event?.regions)
+        ? event.regions.map((item) => cleanText(item?.regionName || item?.name))
+        : []),
+    ]),
+  )
+    .filter(Boolean)
+    .slice(0, 40);
+
+  const sample = events.slice(0, 5).map((event) => ({
+    id: event?.id ?? null,
+    name: cleanText(event?.name),
+    parent: cleanText(event?.parent || event?.parents?.[0]?.parentName),
+    dayOfWeek: cleanText(event?.dayOfWeek),
+    startTime: cleanText(event?.startTime),
+    regions: Array.isArray(event?.regions)
+      ? event.regions.map((item) => cleanText(item?.regionName || item?.name)).filter(Boolean)
+      : [],
+    categories: Array.isArray(event?.eventTypes)
+      ? event.eventTypes.map((item) => cleanText(item?.eventCategory)).filter(Boolean)
+      : [],
+  }));
+
+  console.error(
+    `F3 API diagnostics: ${events.length} total events, ` +
+      `${activeWorkoutEvents.length} active public scheduled 1st F events, ${aos.length} matched AOs.`,
+  );
+  console.error(`F3 API categories seen: ${categories.join(', ') || '(none)'}`);
+  console.error(`F3 API regions seen: ${regions.join(', ') || '(none)'}`);
+  console.error(`F3 API sample events: ${JSON.stringify(sample)}`);
+}
+
+function toBoolean(value, fallback) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    if (/^true$/i.test(value)) return true;
+    if (/^false$/i.test(value)) return false;
+  }
+  return fallback;
 }
 
 async function readExistingAos() {
