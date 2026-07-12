@@ -1,14 +1,24 @@
-# GitHub Actions runner/install fix v7
+# F3 Midlands public npm isolation fix v9
 
-Replace `.github/workflows/deploy.yml` with the included file.
+Cancel the currently hung GitHub Actions run before applying this patch.
 
-Changes:
+Extract this ZIP into the repository root and overwrite:
 
-- Enables the official `setup-node` npm cache.
-- Uses the existing `package-lock.json` as the cache key.
-- Prints Node, npm, registry, and HTTP fetch progress.
-- Limits each silent install attempt to three minutes.
-- Retries once after clearing `node_modules` and verifying the npm cache.
-- Leaves the F3 Nation source-of-truth sync logic unchanged.
+- `.github/workflows/deploy.yml`
+- `.npmrc`
+- `package.json`
+- `package-lock.json`
 
-After replacing the file, commit and push it to `main`.
+## Why this version is different
+
+The workflow now:
+
+- disables `actions/setup-node` package-manager caching;
+- repairs any remaining private OpenAI registry URLs in the lockfile;
+- fails immediately if any private registry markers remain;
+- removes the runner's user-level `.npmrc`;
+- forces `https://registry.npmjs.org/` through environment, npm config, and the `npm ci` command;
+- uses a fresh `/tmp/f3midlands-npm-cache` for every run;
+- does not use `--prefer-offline`.
+
+The F3 Nation source-of-truth generation and deployment steps are unchanged.

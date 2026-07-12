@@ -26,22 +26,20 @@ jobs:
     env:
       F3_NATION_API_KEY: ${{ secrets.F3_NATION_API_KEY }}
       F3_API_CLIENT: f3-midlands-site
-      # These names define the site's official F3 organization scope only.
-      # AO names, counts, descriptions, schedules, locations, coordinates,
-      # directions, links, and contact details all come from F3 Nation.
       F3_TARGET_ORG_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
       F3_MIN_AO_COUNT: '5'
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
 
     steps:
       - name: Checkout complete repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js without restored npm cache
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: package-lock.json
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
       - name: Verify F3 Nation secret is available
         shell: bash
@@ -52,41 +50,81 @@ jobs:
           fi
           echo "F3_NATION_API_KEY is available to the workflow (${#F3_NATION_API_KEY} characters)."
 
-      - name: Install dependencies
+      - name: Sanitize npm lockfile and configuration
         shell: bash
-        timeout-minutes: 7
         run: |
           set -euo pipefail
 
-          npm config set fetch-retries 4
-          npm config set fetch-retry-factor 2
-          npm config set fetch-retry-mintimeout 10000
-          npm config set fetch-retry-maxtimeout 60000
+          python <<'PY'
+          from pathlib import Path
+
+          lock = Path("package-lock.json")
+          if not lock.exists():
+              raise SystemExit("package-lock.json is missing.")
+
+          text = lock.read_text(encoding="utf-8")
+          original = text
+
+          internal_prefixes = [
+              "https://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/",
+              "http://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/",
+          ]
+
+          for prefix in internal_prefixes:
+              text = text.replace(prefix, "https://registry.npmjs.org/")
+
+          lock.write_text(text, encoding="utf-8")
+
+          remaining = [
+              marker for marker in
+              ("applied-caas", "internal.api.openai.org", "/artifactory/api/npm/")
+              if marker in text
+          ]
+
+          if remaining:
+              raise SystemExit(
+                  "package-lock.json still contains private registry markers: "
+                  + ", ".join(remaining)
+              )
+
+          replacements = original.count("applied-caas")
+          print(f"Lockfile private registry references repaired: {replacements}")
+          print(f"Public npm references present: {text.count('registry.npmjs.org')}")
+          PY
+
+          rm -f "$HOME/.npmrc"
+          npm config set registry https://registry.npmjs.org/
+          npm config set audit false
+          npm config set fund false
+
+          echo "Effective npm registry: $(npm config get registry)"
+
+          if grep -RInE 'applied-caas|internal\.api\.openai\.org|/artifactory/api/npm/' \
+            package-lock.json package.json .npmrc; then
+            echo "::error title=Private npm registry remains::A committed npm file still points to the internal OpenAI registry."
+            exit 1
+          fi
+
+      - name: Install dependencies from public npm
+        shell: bash
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+
+          rm -rf node_modules /tmp/f3midlands-npm-cache
+          mkdir -p /tmp/f3midlands-npm-cache
 
           echo "Node: $(node --version)"
           echo "npm: $(npm --version)"
           echo "Registry: $(npm config get registry)"
 
-          for attempt in 1 2; do
-            echo "npm ci attempt ${attempt} of 2"
-
-            if timeout 180s npm ci               --prefer-offline               --no-audit               --no-fund               --loglevel=http; then
-              echo "Dependencies installed successfully."
-              exit 0
-            fi
-
-            exit_code=$?
-            echo "::warning title=npm install attempt failed::Attempt ${attempt} exited with code ${exit_code}."
-
-            if [[ "${attempt}" == "1" ]]; then
-              rm -rf node_modules
-              npm cache verify || true
-              sleep 10
-            fi
-          done
-
-          echo "::error title=npm install failed::npm ci failed twice or exceeded the three-minute timeout."
-          exit 1
+          timeout 300s npm ci \
+            --registry=https://registry.npmjs.org/ \
+            --cache=/tmp/f3midlands-npm-cache \
+            --prefer-online \
+            --no-audit \
+            --no-fund \
+            --loglevel=http
 
       - name: Generate complete AO directory from F3 Nation
         run: npm run sync:aos
