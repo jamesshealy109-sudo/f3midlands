@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://jamesshealy109-sudo.github.io',
-  base: '/f3midlands/',
+  site: 'https://f3midlands.com',
   output: 'static',
 });

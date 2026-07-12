@@ -1,7 +1,9 @@
 .env.example
 .github/workflows/deploy.yml
 .gitignore
+.npmrc
 FULL-REPO-MANIFEST.txt
+README-CUSTOM-DOMAIN.md
 README.md
 REPLACEMENT-CHECKLIST.txt
 astro.config.mjs
