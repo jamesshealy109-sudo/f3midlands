@@ -1,0 +1,21 @@
+{
+  "name": "f3midlands",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "sync:aos": "node scripts/sync-f3-aos.mjs",
+    "sync:aos:test": "F3_API_FIXTURE_DIR=tests/fixtures/source-of-truth F3_MIN_AO_COUNT=3 F3_SYNC_DRY_RUN=true node scripts/sync-f3-aos.mjs",
+    "build": "npm run sync:aos && astro build",
+    "build:static": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.9",
+    "astro": "7.0.7",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {}
+}

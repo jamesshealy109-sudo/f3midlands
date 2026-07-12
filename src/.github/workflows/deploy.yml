@@ -1,0 +1,151 @@
+name: Deploy F3 Midlands to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+
+    env:
+      F3_NATION_API_KEY: ${{ secrets.F3_NATION_API_KEY }}
+      F3_API_CLIENT: f3-midlands-site
+      F3_TARGET_ORG_NAMES: Lexington,Columbia,Lake Murray,Camden,Saluda
+      F3_MIN_AO_COUNT: '5'
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+    steps:
+      - name: Checkout complete repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js without restored npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Verify F3 Nation secret is available
+        shell: bash
+        run: |
+          if [[ -z "${F3_NATION_API_KEY:-}" ]]; then
+            echo "::error title=F3 Nation API key unavailable::Add F3_NATION_API_KEY under Settings > Secrets and variables > Actions > Repository secrets."
+            exit 1
+          fi
+          echo "F3_NATION_API_KEY is available to the workflow (${#F3_NATION_API_KEY} characters)."
+
+      - name: Sanitize npm lockfile and configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python <<'PY'
+          from pathlib import Path
+
+          lock = Path("package-lock.json")
+          if not lock.exists():
+              raise SystemExit("package-lock.json is missing.")
+
+          text = lock.read_text(encoding="utf-8")
+          original = text
+
+          internal_prefixes = [
+              "https://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/",
+              "http://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/",
+          ]
+
+          for prefix in internal_prefixes:
+              text = text.replace(prefix, "https://registry.npmjs.org/")
+
+          lock.write_text(text, encoding="utf-8")
+
+          remaining = [
+              marker for marker in
+              ("applied-caas", "internal.api.openai.org", "/artifactory/api/npm/")
+              if marker in text
+          ]
+
+          if remaining:
+              raise SystemExit(
+                  "package-lock.json still contains private registry markers: "
+                  + ", ".join(remaining)
+              )
+
+          replacements = original.count("applied-caas")
+          print(f"Lockfile private registry references repaired: {replacements}")
+          print(f"Public npm references present: {text.count('registry.npmjs.org')}")
+          PY
+
+          rm -f "$HOME/.npmrc"
+          npm config set registry https://registry.npmjs.org/
+          npm config set audit false
+          npm config set fund false
+
+          echo "Effective npm registry: $(npm config get registry)"
+
+          if grep -RInE 'applied-caas|internal\.api\.openai\.org|/artifactory/api/npm/' \
+            package-lock.json package.json .npmrc; then
+            echo "::error title=Private npm registry remains::A committed npm file still points to the internal OpenAI registry."
+            exit 1
+          fi
+
+      - name: Install dependencies from public npm
+        shell: bash
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+
+          rm -rf node_modules /tmp/f3midlands-npm-cache
+          mkdir -p /tmp/f3midlands-npm-cache
+
+          echo "Node: $(node --version)"
+          echo "npm: $(npm --version)"
+          echo "Registry: $(npm config get registry)"
+
+          timeout 300s npm ci \
+            --registry=https://registry.npmjs.org/ \
+            --cache=/tmp/f3midlands-npm-cache \
+            --prefer-online \
+            --no-audit \
+            --no-fund \
+            --loglevel=http
+
+      - name: Generate complete AO directory from F3 Nation
+        run: npm run sync:aos
+
+      - name: Build Astro site
+        run: npm run build:static
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
