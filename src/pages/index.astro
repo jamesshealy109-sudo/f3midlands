@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/facelift.css';
 import aos from '../data/aos.json';
 const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false && ao.active !== false && ao.verified !== false);
 
@@ -35,6 +36,7 @@ const descriptionRegions = regions.join(', ');
 <a href="#today">Today</a>
 <a href="#find">Find an AO</a>
 <a href="#contact">Need Help?</a>
+        <a class="nav-social" href="https://www.facebook.com/F3LexSC/" target="_blank" rel="noopener noreferrer">F3 Lexington <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
 
@@ -42,6 +44,7 @@ const descriptionRegions = regions.join(', ');
       <section class="hero">
         <div class="hero-bg" aria-hidden="true"></div>
         <div class="hero-content">
+          <div class="sync-status"><i aria-hidden="true"></i><span>AO data synced from F3 Nation</span></div>
           <div class="hero-mark" aria-hidden="true"><img src="/assets/f3-logo.png" alt="" /></div>
           <p class="eyebrow">{regionLine || 'F3 Midlands'}</p>
           <h1>Free outdoor workouts for men.</h1>
@@ -107,6 +110,27 @@ const descriptionRegions = regions.join(', ');
 
     </div>
 
+  </div>
+</section>
+
+<section class="section community-section" aria-labelledby="community-title">
+  <div class="community-shell">
+    <figure class="community-photo">
+      <img src="/assets/f3-lexington-community.jpg" alt="A large F3 Lexington community gathering" />
+      <figcaption>F3 Lexington • Established 12.19.2014</figcaption>
+    </figure>
+
+    <div class="community-copy">
+      <p class="eyebrow">More than a workout</p>
+      <h2 id="community-title">Find your people in the gloom.</h2>
+      <p>Fitness gets men out the door. Fellowship keeps them coming back. Leadership sends them home stronger for their families and communities.</p>
+      <div class="three-f" aria-label="The three Fs">
+        <span><b>01</b> Fitness</span>
+        <span><b>02</b> Fellowship</span>
+        <span><b>03</b> Faith</span>
+      </div>
+      <a class="button facebook-button" href="https://www.facebook.com/F3LexSC/" target="_blank" rel="noopener noreferrer">Follow F3 Lexington <span aria-hidden="true">↗</span></a>
+    </div>
   </div>
 </section>
 
