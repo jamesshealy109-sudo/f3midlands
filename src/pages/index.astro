@@ -211,14 +211,17 @@ const homeSchema = {
               <p class="today-card-meta">{ao.region} • {ao.city} • {ao.time}</p>
             </div>
 
-            <a
-              class="map-link today-compact-link"
-              href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Directions
-            </a>
+            <div class="today-card-actions">
+              <a class="ao-detail-link" href={`/workouts/${aoSlug(ao)}/`} aria-label={`View ${ao.name} workout page`}>View AO page</a>
+              <a
+                class="map-link today-compact-link"
+                href={ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Directions
+              </a>
+            </div>
           </div>
         </article>
       ))}
@@ -284,6 +287,7 @@ const homeSchema = {
                 </div>
 
                 <div class="compact-card-links">
+                  <a class="ao-detail-link" href={`/workouts/${aoSlug(ao)}/`} aria-label={`View ${ao.name} workout page`}>View AO page</a>
                   <a
                     class="map-link compact-map-link"
                     href={ao.mapUrl}
@@ -320,7 +324,7 @@ const homeSchema = {
 
         <p class="finder-empty" id="finderEmpty" hidden>No AOs match those filters.</p>
       </section>
-      <section class="section faq-section" aria-labelledby="faq-title">
+      <section id="faq" class="section faq-section" aria-labelledby="faq-title">
         <div class="section-heading wide">
           <p class="eyebrow">Your first workout</p>
           <h2 id="faq-title">Questions every new guy asks.</h2>

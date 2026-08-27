@@ -471,6 +471,34 @@ body::before {
   color: var(--signal);
 }
 
+.ao-detail-link {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid var(--signal);
+  color: var(--signal);
+  font-size: .65rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ao-detail-link:hover {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+.today-card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .region-seo-links {
   display: flex;
   flex-wrap: wrap;
@@ -503,11 +531,16 @@ body::before {
   color: var(--red);
 }
 
+.faq-section .section-heading {
+  margin-inline: auto;
+  text-align: center;
+}
+
 .faq-grid {
   display: grid;
   width: min(1180px, 100%);
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 50px;
+  margin: 50px auto 0;
   border-top: 1px solid #cbc6bb;
   border-left: 1px solid #cbc6bb;
 }
@@ -768,6 +801,15 @@ footer {
 }
 
 @media (max-width: 640px) {
+  .today-card-actions {
+    width: 100%;
+  }
+
+  .today-card-actions a,
+  .compact-card-links a {
+    width: 100%;
+  }
+
   .faq-grid {
     grid-template-columns: 1fr;
   }
