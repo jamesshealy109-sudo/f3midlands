@@ -16,7 +16,7 @@ const descriptionRegions = regions.join(', ');
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={`F3 Midlands helps men find free outdoor workouts across ${descriptionRegions || 'the Midlands'}. AO locations and schedules are synchronized from F3 Nation.`} />
+    <meta name="description" content={`Find free, peer-led outdoor workouts and a stronger community of men across ${descriptionRegions || 'the Midlands'}.`} />
     <title>F3 Midlands | Free Outdoor Workouts for Men</title>
     <link
   rel="icon"
@@ -35,7 +35,7 @@ const descriptionRegions = regions.join(', ');
         <a href="#new">I'm New</a>
 <a href="#today">Today</a>
 <a href="#find">Find an AO</a>
-<a href="#contact">Need Help?</a>
+<a href="#contact">Talk to a Local</a>
         <a class="nav-social" href="https://www.facebook.com/F3LexSC/" target="_blank" rel="noopener noreferrer">F3 Lexington <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
@@ -44,18 +44,17 @@ const descriptionRegions = regions.join(', ');
       <section class="hero">
         <div class="hero-bg" aria-hidden="true"></div>
         <div class="hero-content">
-          <div class="sync-status"><i aria-hidden="true"></i><span>AO data synced from F3 Nation</span></div>
           <div class="hero-mark" aria-hidden="true"><img src="/assets/f3-logo.png" alt="" /></div>
           <p class="eyebrow">{regionLine || 'F3 Midlands'}</p>
-          <h1>Free outdoor workouts for men.</h1>
-          <p class="lead">No fees. No signup. No excuses. Just show up in the gloom and get better with men in your community.</p>
+          <h1>The Midlands gets stronger before sunrise.</h1>
+          <p class="lead">Every week, men across our towns lace up, show up, and push one another forward. Your first workout is free. So is every one after that.</p>
           <div class="hero-actions">
             <a class="button primary" href="#new">Start Here</a>
 	   <a class="button ghost" href="#today">Today’s Workouts</a>
           </div>
           <div class="stats" aria-label="F3 Midlands quick stats">
-            <div><strong>{totalAos}</strong><span>AO listings</span></div>
-            <div><strong>{regions.length}</strong><span>Regions</span></div>
+            <div><strong>{totalAos}</strong><span>Places to post</span></div>
+            <div><strong>{regions.length}</strong><span>Local regions</span></div>
             <div><strong>$0</strong><span>Cost</span></div>
             <div><strong>365</strong><span>Rain or shine</span></div>
           </div>
@@ -69,11 +68,12 @@ const descriptionRegions = regions.join(', ');
 
       <p class="eyebrow">Start Here</p>
 
-      <h2>Your first F3 workout starts here.</h2>
+      <h2>You don't need to be in shape. You just need to show up.</h2>
 
       <p>
-        F3 is free, outdoors, peer-led, and open to all men. Show up
-        10 minutes early and we'll take care of the rest.
+        Every man out there remembers his first morning in the gloom. Come as
+        you are, arrive 10 minutes early, and tell the first guy you see that
+        you're new. We'll take it from there.
       </p>
 
       <div class="new-grid">
@@ -122,13 +122,14 @@ const descriptionRegions = regions.join(', ');
 
     <div class="community-copy">
       <p class="eyebrow">More than a workout</p>
-      <h2 id="community-title">Find your people in the gloom.</h2>
-      <p>Fitness gets men out the door. Fellowship keeps them coming back. Leadership sends them home stronger for their families and communities.</p>
+      <h2 id="community-title">These are the men who will know your name.</h2>
+      <p>We meet in dark parking lots and finish as the sun comes up. We sweat together, laugh together, and keep showing up for one another long after the workout ends.</p>
       <div class="three-f" aria-label="The three Fs">
         <span><b>01</b> Fitness</span>
         <span><b>02</b> Fellowship</span>
         <span><b>03</b> Faith</span>
       </div>
+      <p class="community-note"><strong>New guy promise:</strong> You will not be left behind, and you will not finish alone.</p>
       <a class="button facebook-button" href="https://www.facebook.com/F3LexSC/" target="_blank" rel="noopener noreferrer">Follow F3 Lexington <span aria-hidden="true">↗</span></a>
     </div>
   </div>
@@ -200,8 +201,8 @@ const descriptionRegions = regions.join(', ');
       <section id="find" class="section finder finder-app" aria-labelledby="find-title">
         <div class="section-heading wide finder-heading">
           <p class="eyebrow">AO Finder</p>
-          <h2 id="find-title">Find the right AO.</h2>
-          <p>Search the full Midlands directory, narrow by region or workout style, then open directions.</p>
+          <h2 id="find-title">There's a shovel flag waiting for you.</h2>
+          <p>Pick your part of the Midlands, choose the kind of workout you want, and meet the men who post there.</p>
         </div>
 
         <div class="finder-shell">
@@ -289,9 +290,9 @@ const descriptionRegions = regions.join(', ');
       <section id="contact" class="section contact-section" aria-labelledby="contact-title">
         <div class="contact-grid help-grid">
           <div>
-            <p class="eyebrow">Need Help?</p>
-            <h2 id="contact-title">Still not sure where to start?</h2>
-            <p>Send us a note and a local PAX will help point you toward a good first workout. You can also use the official F3 Nation map to explore every listed AO nearby.</p>
+            <p class="eyebrow">Talk to a Local</p>
+            <h2 id="contact-title">A real person will help you pick your first workout.</h2>
+            <p>Tell us roughly where you live and what mornings work. A local PAX—not a bot or a mailing list—will point you toward a nearby group and make sure someone is looking for you when you arrive.</p>
 
             <div class="hero-actions help-actions">
               <a class="button primary" href="#contactForm">Send us a message</a>

@@ -123,30 +123,6 @@ body::before {
   text-align: left;
 }
 
-.sync-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
-  padding: 8px 11px;
-  border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: 999px;
-  background: rgba(8, 12, 13, .62);
-  color: #d9dddc;
-  font-size: .67rem;
-  font-weight: 850;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.sync-status i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--signal);
-  box-shadow: 0 0 18px rgba(233, 255, 98, .86);
-}
-
 .hero-mark {
   position: absolute;
   right: 0;
@@ -435,6 +411,22 @@ body::before {
   color: #b9c0c2;
   font-size: 1.06rem;
   line-height: 1.7;
+}
+
+.community-copy .community-note {
+  margin: -8px 0 28px;
+  padding: 16px 18px;
+  border-left: 4px solid var(--signal);
+  background: rgba(255, 255, 255, .05);
+  color: #e9eceb;
+  font-size: .88rem;
+  line-height: 1.55;
+}
+
+.community-note strong {
+  color: var(--signal);
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 .three-f {
