@@ -2,7 +2,8 @@
 import '../styles/global.css';
 import '../styles/facelift.css';
 import aos from '../data/aos.json';
-const visibleAos = aos.filter((ao) => ao.showOnWebsite !== false && ao.active !== false && ao.verified !== false);
+import { aoSlug, regionSlug, SITE_URL, visibleListings, type AoListing } from '../lib/seo';
+const visibleAos = visibleListings(aos as unknown as AoListing[]);
 
 const regions = [...new Set(visibleAos.map((ao) => ao.region).filter(Boolean))];
 const defaultRegion = regions[0] || 'all';
@@ -10,14 +11,43 @@ const types = [...new Set(visibleAos.map((ao) => ao.type).filter(Boolean))].sort
 const totalAos = visibleAos.length;
 const regionLine = regions.join(' • ');
 const descriptionRegions = regions.join(', ');
+const pageTitle = "Free Men's Workouts in Columbia & Lexington, SC | F3 Midlands";
+const pageDescription = `Find free, peer-led outdoor workouts for men across ${descriptionRegions || 'Lexington, Columbia, Lake Murray, Camden, and Saluda'}. No fees, no signup, and all fitness levels welcome.`;
+const homeSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'F3 Midlands',
+  alternateName: 'F3 Lexington and Midlands',
+  url: SITE_URL,
+  description: pageDescription,
+  publisher: {
+    '@type': 'Organization',
+    name: 'F3 Midlands',
+    url: SITE_URL,
+    logo: `${SITE_URL}/assets/f3-logo.png`,
+    sameAs: ['https://www.facebook.com/F3LexSC/', 'https://f3nation.com/'],
+  },
+};
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={`Find free, peer-led outdoor workouts and a stronger community of men across ${descriptionRegions || 'the Midlands'}.`} />
-    <title>F3 Midlands | Free Outdoor Workouts for Men</title>
+    <meta name="description" content={pageDescription} />
+    <title>{pageTitle}</title>
+    <link rel="canonical" href={`${SITE_URL}/`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="F3 Midlands" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={`${SITE_URL}/`} />
+    <meta property="og:image" content={`${SITE_URL}/assets/f3-lexington-community.jpg`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={`${SITE_URL}/assets/f3-lexington-community.jpg`} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(homeSchema)} />
     <link
   rel="icon"
   type="image/png"
@@ -45,7 +75,7 @@ const descriptionRegions = regions.join(', ');
         <div class="hero-bg" aria-hidden="true"></div>
         <div class="hero-content">
           <div class="hero-mark" aria-hidden="true"><img src="/assets/f3-logo.png" alt="" /></div>
-          <p class="eyebrow">{regionLine || 'F3 Midlands'}</p>
+          <p class="eyebrow">F3 Midlands • {regionLine || 'Lexington • Columbia • Lake Murray • Camden • Saluda'}</p>
           <h1>The Midlands gets stronger before sunrise.</h1>
           <p class="lead">Every week, men across our towns lace up, show up, and push one another forward. Your first workout is free. So is every one after that.</p>
           <div class="hero-actions">
@@ -177,7 +207,7 @@ const descriptionRegions = regions.join(', ');
           <div class="today-compact-main">
             <div>
               <span>{ao.type}</span>
-              <h3>{ao.name}</h3>
+              <h3><a class="ao-name-link" href={`/workouts/${aoSlug(ao)}/`}>{ao.name}</a></h3>
               <p class="today-card-meta">{ao.region} • {ao.city} • {ao.time}</p>
             </div>
 
@@ -203,6 +233,9 @@ const descriptionRegions = regions.join(', ');
           <p class="eyebrow">AO Finder</p>
           <h2 id="find-title">There's a shovel flag waiting for you.</h2>
           <p>Pick your part of the Midlands, choose the kind of workout you want, and meet the men who post there.</p>
+          <nav class="region-seo-links" aria-label="Explore workouts by region">
+            {regions.map((region) => <a href={`/regions/${regionSlug(region)}/`}>Workouts in {region}</a>)}
+          </nav>
         </div>
 
         <div class="finder-shell">
@@ -247,7 +280,7 @@ const descriptionRegions = regions.join(', ');
                     <span class="type-pill">{ao.type}</span>
                     <span>{ao.region}</span>
                   </div>
-                  <h3>{ao.name}</h3>
+                  <h3><a class="ao-name-link" href={`/workouts/${aoSlug(ao)}/`}>{ao.name}</a></h3>
                 </div>
 
                 <div class="compact-card-links">
@@ -287,6 +320,21 @@ const descriptionRegions = regions.join(', ');
 
         <p class="finder-empty" id="finderEmpty" hidden>No AOs match those filters.</p>
       </section>
+      <section class="section faq-section" aria-labelledby="faq-title">
+        <div class="section-heading wide">
+          <p class="eyebrow">Your first workout</p>
+          <h2 id="faq-title">Questions every new guy asks.</h2>
+        </div>
+        <div class="faq-grid">
+          <article><h3>Is F3 really free?</h3><p>Yes. Every F3 workout is free. There are no memberships, contracts, or required purchases.</p></article>
+          <article><h3>Do I need to be in shape?</h3><p>No. Start where you are and modify any movement you need to. The group will challenge you without leaving you behind.</p></article>
+          <article><h3>Who can participate?</h3><p>F3 workouts are open to all men, regardless of age, background, or current fitness level.</p></article>
+          <article><h3>What is an AO?</h3><p>AO means Area of Operations—the local park, school, track, or parking lot where an F3 group meets.</p></article>
+          <article><h3>What should I bring?</h3><p>Bring water, work gloves, comfortable shoes, and clothes you can move in. Arrive about 10 minutes early.</p></article>
+          <article><h3>What happens if it rains?</h3><p>We still post. F3 meets outdoors, rain or shine, throughout the year.</p></article>
+        </div>
+      </section>
+
       <section id="contact" class="section contact-section" aria-labelledby="contact-title">
         <div class="contact-grid help-grid">
           <div>

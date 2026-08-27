@@ -1,0 +1,113 @@
+---
+import SeoLayout from '../../layouts/SeoLayout.astro';
+import rawAos from '../../data/aos.json';
+import {
+  aoSlug,
+  regionName,
+  regionSlug,
+  SITE_URL,
+  stateFromAo,
+  visibleListings,
+  zipFromAo,
+  type AoListing,
+} from '../../lib/seo';
+
+export function getStaticPaths() {
+  return visibleListings(rawAos as unknown as AoListing[]).map((ao) => ({
+    params: { slug: aoSlug(ao) },
+    props: { ao },
+  }));
+}
+
+interface Props { ao: AoListing }
+const { ao } = Astro.props;
+const state = stateFromAo(ao);
+const displayRegion = regionName(ao.region);
+const canonicalPath = `/workouts/${aoSlug(ao)}/`;
+const title = `${ao.name}: Free Men's Workout in ${ao.city}, ${state} | F3`;
+const description = `Join ${ao.name}, a free ${ao.type.toLowerCase()} workout for men in ${ao.city}, ${state}. Meets ${ao.days} from ${ao.time} at ${ao.location || ao.address}.`;
+const mapUrl = ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`;
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Place',
+    name: `${ao.name} — F3 Midlands`,
+    description,
+    url: `${SITE_URL}${canonicalPath}`,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: ao.streetAddress || ao.address,
+      addressLocality: ao.city,
+      addressRegion: state,
+      postalCode: zipFromAo(ao),
+      addressCountry: 'US',
+    },
+    ...(ao.latitude && ao.longitude ? {
+      geo: { '@type': 'GeoCoordinates', latitude: ao.latitude, longitude: ao.longitude },
+    } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'F3 Midlands', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: displayRegion, item: `${SITE_URL}/regions/${regionSlug(ao.region)}/` },
+      { '@type': 'ListItem', position: 3, name: ao.name, item: `${SITE_URL}${canonicalPath}` },
+    ],
+  },
+];
+---
+<SeoLayout {title} {description} {canonicalPath} {structuredData}>
+  <section class="seo-hero workout-hero">
+    <div class="seo-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">F3 Midlands</a><span>/</span><a href={`/regions/${regionSlug(ao.region)}/`}>{displayRegion}</a><span>/</span><span>{ao.name}</span>
+      </nav>
+      <p class="eyebrow">{ao.type} • {ao.city}, {state}</p>
+      <h1>{ao.name}</h1>
+      <p class="seo-lead">A free outdoor workout for men. No membership, no signup, and no prior fitness level required.</p>
+    </div>
+  </section>
+
+  <section class="seo-section workout-detail-section">
+    <div class="seo-shell workout-detail-grid">
+      <article class="workout-schedule-card">
+        <p class="eyebrow">When and where</p>
+        <h2>Your next post at {ao.name}.</h2>
+        <dl class="workout-details">
+          <div><dt>Days</dt><dd>{ao.days}</dd></div>
+          <div><dt>Time</dt><dd>{ao.time}</dd></div>
+          <div><dt>Location</dt><dd>{ao.location || ao.address}</dd></div>
+          <div><dt>Address</dt><dd>{ao.address}</dd></div>
+          <div><dt>Workout</dt><dd>{ao.type}</dd></div>
+          <div><dt>Region</dt><dd><a href={`/regions/${regionSlug(ao.region)}/`}>{displayRegion}</a></dd></div>
+        </dl>
+        <div class="hero-actions">
+          <a class="button primary" href={mapUrl} target="_blank" rel="noreferrer">Get directions</a>
+          <a class="button ghost" href="/#contact">Talk to a local</a>
+        </div>
+      </article>
+
+      <aside class="first-post-card">
+        <p class="eyebrow">First time?</p>
+        <h2>We were all the new guy once.</h2>
+        <ol>
+          <li><strong>Bring</strong><span>Water, gloves, and clothes you can move in.</span></li>
+          <li><strong>Arrive</strong><span>Come 10 minutes early and say you're new.</span></li>
+          <li><strong>Expect</strong><span>A challenge you can modify. Nobody finishes alone.</span></li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
+  <section class="seo-local-copy">
+    <div class="seo-shell seo-intro-grid">
+      <div><p class="eyebrow">More than a workout</p><h2>Start your morning with men from {ao.city}.</h2></div>
+      <div>
+        <p>{ao.name} is one of {displayRegion}'s free, peer-led outdoor workouts. The workout changes, but the promise does not: every man is welcome, every man is challenged, and no man is left behind.</p>
+        {ao.notes && <p>{ao.notes}</p>}
+        <a class="seo-text-link" href={`/regions/${regionSlug(ao.region)}/`}>See every workout in {displayRegion} <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+</SeoLayout>

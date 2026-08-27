@@ -1,0 +1,110 @@
+---
+import SeoLayout from '../../layouts/SeoLayout.astro';
+import rawAos from '../../data/aos.json';
+import {
+  aoSlug,
+  regionName,
+  regionSlug,
+  SITE_URL,
+  visibleListings,
+  type AoListing,
+} from '../../lib/seo';
+
+export function getStaticPaths() {
+  const listings = visibleListings(rawAos as unknown as AoListing[]);
+  const regions = [...new Set(listings.map((ao) => ao.region))];
+
+  return regions.map((region) => ({
+    params: { slug: regionSlug(region) },
+    props: { region, listings: listings.filter((ao) => ao.region === region) },
+  }));
+}
+
+interface Props {
+  region: string;
+  listings: AoListing[];
+}
+
+const { region, listings } = Astro.props;
+const displayRegion = regionName(region);
+const searchRegion = /,\s*SC$/i.test(displayRegion) ? displayRegion : `${displayRegion}, SC`;
+const cities = [...new Set(listings.map((ao) => ao.city).filter(Boolean))].sort();
+const workoutTypes = [...new Set(listings.map((ao) => ao.type).filter(Boolean))].sort();
+const canonicalPath = `/regions/${regionSlug(region)}/`;
+const title = `Free Men's Workouts in ${searchRegion} | F3 Midlands`;
+const description = `Find ${listings.length} free, peer-led outdoor workouts for men in ${searchRegion}. See current locations, schedules, workout types, and directions.`;
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: title,
+    description,
+    url: `${SITE_URL}${canonicalPath}`,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: listings.length,
+      itemListElement: listings.map((ao, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: ao.name,
+        url: `${SITE_URL}/workouts/${aoSlug(ao)}/`,
+      })),
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'F3 Midlands', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: displayRegion, item: `${SITE_URL}${canonicalPath}` },
+    ],
+  },
+];
+---
+<SeoLayout {title} {description} {canonicalPath} {structuredData}>
+  <section class="seo-hero">
+    <div class="seo-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">F3 Midlands</a><span>/</span><span>{displayRegion}</span></nav>
+      <p class="eyebrow">Free • Outdoor • Open to all men</p>
+      <h1>Free men's workouts in {searchRegion}.</h1>
+      <p class="seo-lead">No gym membership. No signup. Pick a workout below, arrive 10 minutes early, and tell the first man you meet that you're new.</p>
+      <div class="seo-facts" aria-label={`${displayRegion} workout summary`}>
+        <span><strong>{listings.length}</strong> places to post</span>
+        <span><strong>{cities.length}</strong> local {cities.length === 1 ? 'city' : 'cities'}</span>
+        <span><strong>{workoutTypes.length}</strong> workout {workoutTypes.length === 1 ? 'style' : 'styles'}</span>
+        <span><strong>$0</strong> forever</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="seo-section">
+    <div class="seo-shell seo-intro-grid">
+      <div>
+        <p class="eyebrow">Find your group</p>
+        <h2>There is a shovel flag near you.</h2>
+      </div>
+      <p>F3 workouts in {displayRegion} are led by local men and built to challenge every fitness level. Modify when you need to. Push when you can. Nobody gets left behind.</p>
+    </div>
+
+    <div class="seo-shell seo-card-grid">
+      {listings.map((ao) => (
+        <article class="seo-listing-card">
+          <div class="seo-card-tags"><span>{ao.type}</span><span>{ao.city}</span></div>
+          <h2><a href={`/workouts/${aoSlug(ao)}/`}>{ao.name}</a></h2>
+          <dl>
+            <div><dt>When</dt><dd>{ao.days}<br />{ao.time}</dd></div>
+            <div><dt>Where</dt><dd>{ao.location || ao.address}</dd></div>
+          </dl>
+          <a class="seo-text-link" href={`/workouts/${aoSlug(ao)}/`}>Workout details <span aria-hidden="true">→</span></a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="seo-cta">
+    <div class="seo-shell seo-cta-inner">
+      <div><p class="eyebrow">Your first post</p><h2>Tomorrow morning can be different.</h2></div>
+      <div><p>Bring water, gloves, and a willingness to try. The men at your AO will handle the rest.</p><a class="button primary" href="/#contact">Talk to a local PAX</a></div>
+    </div>
+  </section>
+</SeoLayout>

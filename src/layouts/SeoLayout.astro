@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+import '../styles/facelift.css';
+import '../styles/seo-pages.css';
+import { SITE_URL } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  image?: string;
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const {
+  title,
+  description,
+  canonicalPath,
+  image = '/assets/f3-lexington-community.jpg',
+  structuredData = [],
+} = Astro.props;
+
+const canonical = new URL(canonicalPath, SITE_URL).toString();
+const socialImage = new URL(image, SITE_URL).toString();
+const schema = Array.isArray(structuredData) ? structuredData : [structuredData];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/f3-logo.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="F3 Midlands" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    {schema.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
+  </head>
+  <body class="seo-body">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="F3 Midlands home">
+        <img class="header-f3-logo" src="/assets/f3-logo.png" alt="F3" />
+        <span>F3 Midlands</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="/#new">I'm New</a>
+        <a href="/#today">Today</a>
+        <a href="/#find">Find an AO</a>
+        <a href="/#contact">Talk to a Local</a>
+      </nav>
+    </header>
+
+    <main><slot /></main>
+
+    <footer>
+      <div class="footer-brand">
+        <img src="/assets/f3-logo.png" alt="F3" />
+        <span>F3 Midlands</span>
+      </div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/#find">All workouts</a>
+        <a href="https://www.facebook.com/F3LexSC/" target="_blank" rel="noopener noreferrer">Facebook</a>
+      </div>
+    </footer>
+  </body>
+</html>
