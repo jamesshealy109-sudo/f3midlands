@@ -1,6 +1,7 @@
 ---
 import SeoLayout from '../../layouts/SeoLayout.astro';
 import rawAos from '../../data/aos.json';
+import { getAoMedia } from '../../data/ao-media';
 import {
   aoImageUrl,
   aoOfficialLinks,
@@ -31,6 +32,11 @@ const description = `Join ${ao.name}, a free ${ao.type.toLowerCase()} workout fo
 const mapUrl = ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`;
 const officialImage = aoImageUrl(ao);
 const officialLinks = aoOfficialLinks(ao);
+const aoMedia = getAoMedia(ao.name);
+const pageImage = aoMedia?.hero.src || officialImage;
+const aoPhotoUrls = aoMedia
+  ? [aoMedia.hero, ...aoMedia.gallery].map((photo) => `${SITE_URL}${photo.src}`)
+  : [];
 const structuredData = [
   {
     '@context': 'https://schema.org',
@@ -38,7 +44,7 @@ const structuredData = [
     name: `${ao.name} — F3 Midlands`,
     description,
     url: `${SITE_URL}${canonicalPath}`,
-    ...(officialImage ? { image: officialImage } : {}),
+    ...(aoPhotoUrls.length ? { image: aoPhotoUrls } : officialImage ? { image: officialImage } : {}),
     ...(officialLinks.length ? { sameAs: officialLinks.map((link) => link.url) } : {}),
     address: {
       '@type': 'PostalAddress',
@@ -63,8 +69,11 @@ const structuredData = [
   },
 ];
 ---
-<SeoLayout {title} {description} {canonicalPath} image={officialImage || undefined} {structuredData}>
-  <section class="seo-hero workout-hero">
+<SeoLayout {title} {description} {canonicalPath} image={pageImage || undefined} {structuredData}>
+  <section
+    class:list={['seo-hero', 'workout-hero', aoMedia && 'has-local-photo']}
+    style={aoMedia ? `--workout-hero-image: url('${aoMedia.hero.src}')` : undefined}
+  >
     <div class="seo-shell">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href="/">F3 Midlands</a><span>/</span><a href={`/regions/${regionSlug(ao.region)}/`}>{displayRegion}</a><span>/</span><span>{ao.name}</span>
@@ -135,6 +144,27 @@ const structuredData = [
       </div>
     </div>
   </section>
+
+  {aoMedia && (
+    <section class="ao-photo-story" aria-labelledby="ao-photo-story-title">
+      <div class="seo-shell">
+        <div class="ao-story-intro">
+          <p class="eyebrow">Inside {ao.name}</p>
+          <h2 id="ao-photo-story-title">{aoMedia.heading}</h2>
+          <p>{aoMedia.description}</p>
+        </div>
+
+        <div class="ao-story-grid">
+          {aoMedia.gallery.map((photo) => (
+            <figure class="ao-story-photo">
+              <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+              <figcaption>{photo.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <script>
     document.querySelectorAll<HTMLImageElement>('[data-ao-image]').forEach((image) => {

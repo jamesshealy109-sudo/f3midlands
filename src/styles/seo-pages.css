@@ -71,6 +71,12 @@
   font-size: clamp(5rem, 11vw, 11rem);
 }
 
+.workout-hero.has-local-photo {
+  background:
+    linear-gradient(105deg, rgba(7, 10, 12, .96) 0%, rgba(7, 10, 12, .76) 42%, rgba(7, 10, 12, .34) 100%),
+    var(--workout-hero-image) center 42% / cover no-repeat;
+}
+
 .workout-hero-identity {
   position: relative;
   z-index: 1;
@@ -270,6 +276,96 @@
 .seo-local-copy { background: #101517; }
 .seo-local-copy .seo-text-link { display: inline-block; margin-top: 16px; }
 
+.ao-photo-story {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(76px, 10vw, 140px) 0;
+  border-top: 6px solid var(--signal);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .025), transparent 48%),
+    #0b0f11;
+}
+
+.ao-photo-story::after {
+  content: 'DETENTION';
+  position: absolute;
+  right: -1vw;
+  top: -2vw;
+  color: transparent;
+  font: 900 clamp(6rem, 18vw, 17rem)/1 Impact, sans-serif;
+  letter-spacing: -.03em;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, .06);
+  pointer-events: none;
+}
+
+.ao-story-intro {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(300px, .75fr);
+  column-gap: clamp(36px, 8vw, 120px);
+  align-items: end;
+  margin-bottom: clamp(42px, 6vw, 78px);
+}
+
+.ao-story-intro .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.ao-story-intro h2 {
+  margin: 8px 0 0;
+  font: 900 clamp(3.2rem, 6vw, 6.8rem)/.9 Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  letter-spacing: -.025em;
+  text-transform: uppercase;
+}
+
+.ao-story-intro > p:last-child {
+  margin: 0;
+  color: #b9c0c2;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.ao-story-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+  gap: clamp(16px, 2.5vw, 34px);
+  align-items: end;
+}
+
+.ao-story-photo {
+  margin: 0;
+}
+
+.ao-story-photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, .16);
+  filter: saturate(.9) contrast(1.04);
+}
+
+.ao-story-photo:first-child img {
+  border-bottom: 6px solid var(--red-hot);
+}
+
+.ao-story-photo:last-child img {
+  border-bottom: 6px solid var(--signal);
+}
+
+.ao-story-photo figcaption {
+  padding: 13px 2px 0;
+  color: #8f989b;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
 @media (max-width: 850px) {
   .seo-facts { grid-template-columns: 1fr 1fr; }
   .seo-facts span:nth-child(2) { border-right: 0; }
@@ -278,6 +374,9 @@
   .seo-cta-inner,
   .workout-detail-grid { grid-template-columns: 1fr; }
   .seo-card-grid { grid-template-columns: 1fr 1fr; }
+  .ao-story-intro { grid-template-columns: 1fr; }
+  .ao-story-intro .eyebrow { grid-column: auto; }
+  .ao-story-intro > p:last-child { margin-top: 24px; }
 }
 
 @media (max-width: 620px) {
@@ -291,6 +390,8 @@
   .seo-facts { grid-template-columns: 1fr; }
   .seo-facts span { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, .13); }
   .seo-card-grid { grid-template-columns: 1fr; }
+  .ao-story-grid { grid-template-columns: 1fr; }
+  .ao-story-photo img { aspect-ratio: auto; }
   .workout-details { grid-template-columns: 1fr; }
   .workout-schedule-card,
   .first-post-card { padding: 28px 22px; }
