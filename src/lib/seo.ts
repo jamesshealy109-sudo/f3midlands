@@ -15,6 +15,10 @@ export interface AoSchedule {
   mapUrl?: string;
 }
 
+export interface AoLocation {
+  locationLogoUrl?: string;
+}
+
 export interface AoListing {
   id: string;
   apiAoId?: number;
@@ -36,10 +40,25 @@ export interface AoListing {
   showOnWebsite?: boolean;
   mapUrl?: string;
   f3MapUrl?: string;
+  website?: string;
   email?: string;
   phone?: string;
+  logoUrl?: string;
+  imageUrl?: string;
+  imageSource?: string;
+  twitter?: string;
+  facebook?: string;
+  instagram?: string;
   sourceUrl?: string;
   schedule?: AoSchedule[];
+  locations?: AoLocation[];
+}
+
+export type AoLinkPlatform = 'website' | 'twitter' | 'facebook' | 'instagram';
+
+export interface AoOfficialLink {
+  label: string;
+  url: string;
 }
 
 export const SITE_URL = 'https://f3midlands.com';
@@ -78,4 +97,41 @@ export function zipFromAo(ao: AoListing) {
 
 export function visibleListings(input: AoListing[]) {
   return input.filter((ao) => ao.showOnWebsite !== false && ao.active !== false && ao.verified !== false);
+}
+
+export function externalAoUrl(value: unknown, platform: AoLinkPlatform) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  const withoutAt = raw.replace(/^@/, '').replace(/^\/+|\/+$/g, '');
+  if (/^(?:www\.)?[^\s]+\.[a-z]{2,}(?:\/.*)?$/i.test(withoutAt)) {
+    return `https://${withoutAt}`;
+  }
+
+  const platformBases: Partial<Record<AoLinkPlatform, string>> = {
+    twitter: 'https://x.com/',
+    facebook: 'https://www.facebook.com/',
+    instagram: 'https://www.instagram.com/',
+  };
+  const platformBase = platformBases[platform];
+  return platformBase ? `${platformBase}${withoutAt}` : '';
+}
+
+export function aoImageUrl(ao: AoListing) {
+  return (
+    ao.imageUrl ||
+    ao.logoUrl ||
+    ao.locations?.find((location) => location.locationLogoUrl)?.locationLogoUrl ||
+    ''
+  );
+}
+
+export function aoOfficialLinks(ao: AoListing): AoOfficialLink[] {
+  return [
+    { label: 'Website', url: externalAoUrl(ao.website, 'website') },
+    { label: 'Instagram', url: externalAoUrl(ao.instagram, 'instagram') },
+    { label: 'Facebook', url: externalAoUrl(ao.facebook, 'facebook') },
+    { label: 'X', url: externalAoUrl(ao.twitter, 'twitter') },
+  ].filter((link) => link.url);
 }

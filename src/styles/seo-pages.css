@@ -71,6 +71,40 @@
   font-size: clamp(5rem, 11vw, 11rem);
 }
 
+.workout-hero-identity {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 3vw, 42px);
+}
+
+.workout-hero-identity > div:last-child {
+  min-width: 0;
+}
+
+.workout-logo-frame {
+  width: clamp(92px, 11vw, 142px);
+  height: clamp(92px, 11vw, 142px);
+  flex: 0 0 clamp(92px, 11vw, 142px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 3px solid var(--signal);
+  background: #fff;
+  box-shadow: 12px 12px 0 rgba(179, 33, 33, .8);
+}
+
+.workout-logo-frame[hidden] { display: none; }
+
+.workout-logo-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  object-fit: contain;
+}
+
 .seo-lead {
   max-width: 720px;
   color: #e0e4e3;
@@ -230,6 +264,9 @@
 .first-post-card li { display: grid; gap: 7px; padding: 19px 0; border-top: 1px solid rgba(255, 255, 255, .15); }
 .first-post-card li strong { color: var(--signal); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
 .first-post-card li span { color: #c5cbca; line-height: 1.55; }
+.workout-official-links { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 28px; padding-top: 24px; border-top: 1px solid #d7d3ca; }
+.workout-official-links a { padding: 9px 12px; border: 1px solid #c9c4b9; color: var(--red); font-size: .7rem; font-weight: 950; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
+.workout-official-links a:hover { border-color: var(--red); background: var(--red); color: #fff; }
 .seo-local-copy { background: #101517; }
 .seo-local-copy .seo-text-link { display: inline-block; margin-top: 16px; }
 
@@ -247,6 +284,9 @@
   .seo-shell { width: min(100% - 26px, 1180px); }
   .seo-hero { padding: 100px 0 62px; }
   .seo-hero h1 { font-size: clamp(3.5rem, 17vw, 5.8rem); }
+  .workout-hero-identity { align-items: flex-start; gap: 16px; }
+  .workout-logo-frame { width: 76px; height: 76px; flex-basis: 76px; box-shadow: 7px 7px 0 rgba(179, 33, 33, .8); }
+  .workout-logo-frame img { padding: 7px; }
   .seo-lead { font-size: 1rem; }
   .seo-facts { grid-template-columns: 1fr; }
   .seo-facts span { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, .13); }

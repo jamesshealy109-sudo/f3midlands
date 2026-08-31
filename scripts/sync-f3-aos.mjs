@@ -77,6 +77,7 @@ try {
     markers,
     aoAssignments,
     targetOrgs,
+    orgById,
   });
 
   if (directory.length < MIN_AO_COUNT) {
@@ -247,7 +248,7 @@ function findTargetAncestor(ao, orgById, targetOrgIds, targetById) {
   return null;
 }
 
-function buildDirectory({ aos, events, markers, aoAssignments, targetOrgs }) {
+function buildDirectory({ aos, events, markers, aoAssignments, targetOrgs, orgById }) {
   const eventsByAoId = new Map();
   for (const event of events) {
     for (const aoId of getEventAoIds(event)) {
@@ -302,6 +303,7 @@ function buildDirectory({ aos, events, markers, aoAssignments, targetOrgs }) {
     const days = unique(schedules.map((schedule) => schedule.day));
     const times = unique(schedules.map((schedule) => schedule.time));
     const officialDescription = stripHtml(ao.description);
+    const image = resolveAoImage(ao, schedules, orgById);
 
     directory.push({
       id: `f3-ao-${aoId}`,
@@ -331,6 +333,8 @@ function buildDirectory({ aos, events, markers, aoAssignments, targetOrgs }) {
       email: cleanText(ao.email),
       phone: cleanText(ao.phone),
       logoUrl: cleanText(ao.logoUrl),
+      imageUrl: image.url,
+      imageSource: image.source,
       twitter: cleanText(ao.twitter),
       facebook: cleanText(ao.facebook),
       instagram: cleanText(ao.instagram),
@@ -356,6 +360,34 @@ function buildDirectory({ aos, events, markers, aoAssignments, targetOrgs }) {
     const orderDifference = (targetOrder.get(left.regionId) ?? 999) - (targetOrder.get(right.regionId) ?? 999);
     return orderDifference || left.name.localeCompare(right.name);
   });
+}
+
+function resolveAoImage(ao, schedules, orgById) {
+  const aoLogoUrl = cleanText(ao.logoUrl);
+  if (aoLogoUrl) return { url: aoLogoUrl, source: 'ao' };
+
+  const locationLogoUrl = schedules.map((schedule) => cleanText(schedule.locationLogoUrl)).find(Boolean);
+  if (locationLogoUrl) return { url: locationLogoUrl, source: 'location' };
+
+  let currentId = Number(ao.parentId);
+  const visited = new Set();
+  while (Number.isFinite(currentId) && currentId > 0 && !visited.has(currentId)) {
+    visited.add(currentId);
+    const organization = orgById.get(currentId);
+    if (!organization) break;
+
+    const organizationLogoUrl = cleanText(organization.logoUrl);
+    if (organizationLogoUrl) {
+      return {
+        url: organizationLogoUrl,
+        source: cleanText(organization.orgType) || 'organization',
+      };
+    }
+
+    currentId = Number(organization.parentId);
+  }
+
+  return { url: '', source: '' };
 }
 
 

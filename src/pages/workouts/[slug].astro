@@ -2,6 +2,8 @@
 import SeoLayout from '../../layouts/SeoLayout.astro';
 import rawAos from '../../data/aos.json';
 import {
+  aoImageUrl,
+  aoOfficialLinks,
   aoSlug,
   regionName,
   regionSlug,
@@ -27,6 +29,8 @@ const canonicalPath = `/workouts/${aoSlug(ao)}/`;
 const title = `${ao.name}: Free Men's Workout in ${ao.city}, ${state} | F3`;
 const description = `Join ${ao.name}, a free ${ao.type.toLowerCase()} workout for men in ${ao.city}, ${state}. Meets ${ao.days} from ${ao.time} at ${ao.location || ao.address}.`;
 const mapUrl = ao.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ao.address)}`;
+const officialImage = aoImageUrl(ao);
+const officialLinks = aoOfficialLinks(ao);
 const structuredData = [
   {
     '@context': 'https://schema.org',
@@ -34,6 +38,8 @@ const structuredData = [
     name: `${ao.name} — F3 Midlands`,
     description,
     url: `${SITE_URL}${canonicalPath}`,
+    ...(officialImage ? { image: officialImage } : {}),
+    ...(officialLinks.length ? { sameAs: officialLinks.map((link) => link.url) } : {}),
     address: {
       '@type': 'PostalAddress',
       streetAddress: ao.streetAddress || ao.address,
@@ -57,14 +63,23 @@ const structuredData = [
   },
 ];
 ---
-<SeoLayout {title} {description} {canonicalPath} {structuredData}>
+<SeoLayout {title} {description} {canonicalPath} image={officialImage || undefined} {structuredData}>
   <section class="seo-hero workout-hero">
     <div class="seo-shell">
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href="/">F3 Midlands</a><span>/</span><a href={`/regions/${regionSlug(ao.region)}/`}>{displayRegion}</a><span>/</span><span>{ao.name}</span>
       </nav>
-      <p class="eyebrow">{ao.type} • {ao.city}, {state}</p>
-      <h1>{ao.name}</h1>
+      <div class="workout-hero-identity">
+        {officialImage && (
+          <div class="workout-logo-frame" data-ao-image-frame>
+            <img src={officialImage} alt={`${ao.name} logo`} decoding="async" data-ao-image />
+          </div>
+        )}
+        <div>
+          <p class="eyebrow">{ao.type} • {ao.city}, {state}</p>
+          <h1>{ao.name}</h1>
+        </div>
+      </div>
       <p class="seo-lead">A free outdoor workout for men. No membership, no signup, and no prior fitness level required.</p>
     </div>
   </section>
@@ -86,6 +101,16 @@ const structuredData = [
           <a class="button primary" href={mapUrl} target="_blank" rel="noreferrer">Get directions</a>
           <a class="button ghost" href="/#contact">Talk to a local</a>
         </div>
+        {(officialLinks.length > 0 || ao.f3MapUrl) && (
+          <div class="workout-official-links" aria-label={`${ao.name} official links`}>
+            {officialLinks.map((link) => (
+              <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+            ))}
+            {ao.f3MapUrl && (
+              <a href={ao.f3MapUrl} target="_blank" rel="noopener noreferrer">F3 Nation</a>
+            )}
+          </div>
+        )}
       </article>
 
       <aside class="first-post-card">
@@ -110,4 +135,13 @@ const structuredData = [
       </div>
     </div>
   </section>
+
+  <script>
+    document.querySelectorAll<HTMLImageElement>('[data-ao-image]').forEach((image) => {
+      image.addEventListener('error', () => {
+        const frame = image.closest<HTMLElement>('[data-ao-image-frame]');
+        if (frame) frame.hidden = true;
+      });
+    });
+  </script>
 </SeoLayout>

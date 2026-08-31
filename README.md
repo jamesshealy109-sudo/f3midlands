@@ -12,6 +12,7 @@ The following values come from F3 Nation:
 - Official organization/region assignment
 - AO name and description
 - AO website, email, phone, logo, and social links
+- AO imagery with official location and parent-organization logo fallbacks
 - Active/public 1st F events
 - Workout type, day, start time, end time, and event description
 - Location ID, name, full address, latitude, and longitude

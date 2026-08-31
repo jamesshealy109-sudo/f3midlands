@@ -2,7 +2,15 @@
 import '../styles/global.css';
 import '../styles/facelift.css';
 import aos from '../data/aos.json';
-import { aoSlug, regionSlug, SITE_URL, visibleListings, type AoListing } from '../lib/seo';
+import {
+  aoImageUrl,
+  aoOfficialLinks,
+  aoSlug,
+  regionSlug,
+  SITE_URL,
+  visibleListings,
+  type AoListing,
+} from '../lib/seo';
 const visibleAos = visibleListings(aos as unknown as AoListing[]);
 
 const regions = [...new Set(visibleAos.map((ao) => ao.region).filter(Boolean))];
@@ -273,17 +281,31 @@ const homeSchema = {
               class="ao-card compact-ao-card"
               data-region={ao.region}
               data-type={ao.type}
-              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.email || ''} ${ao.scheduleSummary || ''}`.toLowerCase()}
+              data-search={`${ao.name} ${ao.region} ${ao.city} ${ao.type} ${ao.days} ${ao.time} ${ao.address} ${ao.notes} ${ao.website || ''} ${ao.email || ''} ${ao.twitter || ''} ${ao.facebook || ''} ${ao.instagram || ''} ${ao.scheduleSummary || ''}`.toLowerCase()}
               id={ao.id}
               hidden={ao.region !== defaultRegion}
             >
               <div class="compact-card-main">
-                <div>
-                  <div class="card-top compact-card-top">
-                    <span class="type-pill">{ao.type}</span>
-                    <span>{ao.region}</span>
+                <div class="ao-card-identity">
+                  {aoImageUrl(ao) && (
+                    <div class="ao-card-image-frame" data-ao-image-frame>
+                      <img
+                        class="ao-card-image"
+                        src={aoImageUrl(ao)}
+                        alt={`${ao.name} logo`}
+                        loading="lazy"
+                        decoding="async"
+                        data-ao-image
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <div class="card-top compact-card-top">
+                      <span class="type-pill">{ao.type}</span>
+                      <span>{ao.region}</span>
+                    </div>
+                    <h3><a class="ao-name-link" href={`/workouts/${aoSlug(ao)}/`}>{ao.name}</a></h3>
                   </div>
-                  <h3><a class="ao-name-link" href={`/workouts/${aoSlug(ao)}/`}>{ao.name}</a></h3>
                 </div>
 
                 <div class="compact-card-links">
@@ -311,6 +333,16 @@ const homeSchema = {
               </div>
 
               <p>{ao.notes}</p>
+              {(aoOfficialLinks(ao).length > 0 || ao.f3MapUrl) && (
+                <div class="ao-official-links" aria-label={`${ao.name} official links`}>
+                  {aoOfficialLinks(ao).map((link) => (
+                    <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+                  ))}
+                  {ao.f3MapUrl && (
+                    <a href={ao.f3MapUrl} target="_blank" rel="noopener noreferrer">F3 Nation</a>
+                  )}
+                </div>
+              )}
               {(ao.email || ao.phone) && (
                 <p class="ao-contact">
                   {ao.email && <a href={`mailto:${ao.email}`}>{ao.email}</a>}
@@ -411,13 +443,13 @@ const homeSchema = {
     </footer>
 
     <script>
-      const search = document.querySelector('#search');
-      const typeFilter = document.querySelector('#typeFilter');
-      const cards = [...document.querySelectorAll('.ao-card')];
-      const visibleCount = document.querySelector('#visibleCount');
-      const finderSummaryText = document.querySelector('#finderSummaryText');
-      const finderEmpty = document.querySelector('#finderEmpty');
-      const regionChips = [...document.querySelectorAll('[data-region-filter]')];
+      const search = document.querySelector<HTMLInputElement>('#search');
+      const typeFilter = document.querySelector<HTMLSelectElement>('#typeFilter');
+      const cards = [...document.querySelectorAll<HTMLElement>('.ao-card')];
+      const visibleCount = document.querySelector<HTMLElement>('#visibleCount');
+      const finderSummaryText = document.querySelector<HTMLElement>('#finderSummaryText');
+      const finderEmpty = document.querySelector<HTMLElement>('#finderEmpty');
+      const regionChips = [...document.querySelectorAll<HTMLElement>('[data-region-filter]')];
 
       const defaultRegion = document.body.dataset.defaultRegion || 'all';
       let activeRegion = defaultRegion;
@@ -428,7 +460,7 @@ const homeSchema = {
         let visible = 0;
 
         cards.forEach((card) => {
-          const matchesText = !q || card.dataset.search.includes(q);
+          const matchesText = !q || (card.dataset.search || '').includes(q);
           const matchesRegion = activeRegion === 'all' || card.dataset.region === activeRegion;
           const matchesType = type === 'all' || card.dataset.type === type;
           const show = matchesText && matchesRegion && matchesType;
@@ -437,7 +469,7 @@ const homeSchema = {
           if (show) visible++;
         });
 
-        if (visibleCount) visibleCount.textContent = visible;
+        if (visibleCount) visibleCount.textContent = String(visible);
 
         if (finderSummaryText) {
           const regionText = activeRegion === 'all' ? 'across all Midlands regions' : `in ${activeRegion}`;
@@ -464,28 +496,22 @@ const homeSchema = {
 
       applyFilters();
 
-const dayMap = {
-  0: ['sun', 'sunday'],
-  1: ['mon', 'monday'],
-  2: ['tue', 'tuesday'],
-  3: ['wed', 'wednesday'],
-  4: ['thu', 'thursday'],
-  5: ['fri', 'friday'],
-  6: ['sat', 'saturday']
-};
+      document.querySelectorAll<HTMLImageElement>('[data-ao-image]').forEach((image) => {
+        image.addEventListener('error', () => {
+          const frame = image.closest<HTMLElement>('[data-ao-image-frame]');
+          if (frame) frame.hidden = true;
+        });
+      });
 
-const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const todayCards = [...document.querySelectorAll('.today-card')];
-const todayEmpty = document.querySelector('#todayEmpty');
-      const todayTitleEl = document.querySelector('#today-title');
-      const todayEyebrowEl = document.querySelector('#today-eyebrow');
-      const todaySubtitleEl = document.querySelector('#today-subtitle');
-      const todayGridEl = document.querySelector('#todayGrid');
-      const todayCardsEl = [...document.querySelectorAll('.today-card')];
-      const todayEmptyEl = document.querySelector('#todayEmpty');
-      const todayRegionButtonsEl = [...document.querySelectorAll('[data-today-region]')];
-      const todaySummaryLabelEl = document.querySelector('#todaySummaryLabel');
-      const todaySummaryTextEl = document.querySelector('#todaySummaryText');
+      const todayTitleEl = document.querySelector<HTMLElement>('#today-title');
+      const todayEyebrowEl = document.querySelector<HTMLElement>('#today-eyebrow');
+      const todaySubtitleEl = document.querySelector<HTMLElement>('#today-subtitle');
+      const todayGridEl = document.querySelector<HTMLElement>('#todayGrid');
+      const todayCardsEl = [...document.querySelectorAll<HTMLElement>('.today-card')];
+      const todayEmptyEl = document.querySelector<HTMLElement>('#todayEmpty');
+      const todayRegionButtonsEl = [...document.querySelectorAll<HTMLElement>('[data-today-region]')];
+      const todaySummaryLabelEl = document.querySelector<HTMLElement>('#todaySummaryLabel');
+      const todaySummaryTextEl = document.querySelector<HTMLElement>('#todaySummaryText');
 
       const todayDayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const todayNow = new Date();
@@ -515,16 +541,24 @@ const todayEmpty = document.querySelector('#todayEmpty');
         todaySummaryTextEl.textContent = `Select a region to see ${todayTargetDay}.`;
       }
 
-      function getScheduleForTargetDay(card) {
+      type TodaySchedule = {
+        day?: string;
+        time?: string;
+        city?: string;
+        location?: string;
+        mapUrl?: string;
+      };
+
+      function getScheduleForTargetDay(card: HTMLElement) {
         try {
-          const schedule = JSON.parse(card.dataset.schedule || '[]');
+          const schedule = JSON.parse(card.dataset.schedule || '[]') as TodaySchedule[];
           return schedule.find((item) => String(item.day || '').toLowerCase() === todayTargetDay.toLowerCase());
         } catch {
           return null;
         }
       }
 
-      function showTodayRegion(region) {
+      function showTodayRegion(region: string) {
         let visible = 0;
 
         todayRegionButtonsEl.forEach((button) => {
@@ -545,7 +579,7 @@ const todayEmpty = document.querySelector('#todayEmpty');
             visible++;
 
             const meta = card.querySelector('.today-card-meta');
-            const link = card.querySelector('.map-link');
+            const link = card.querySelector<HTMLAnchorElement>('.map-link');
             const title = card.querySelector('h3')?.textContent || 'workout';
 
             const time = slot?.time || card.dataset.fallbackTime || '';
@@ -579,7 +613,7 @@ const todayEmpty = document.querySelector('#todayEmpty');
       }
 
       todayRegionButtonsEl.forEach((button) => {
-        button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion));
+        button.addEventListener('click', () => showTodayRegion(button.dataset.todayRegion || ''));
       });
 
       if (defaultRegion !== 'all') showTodayRegion(defaultRegion);
